@@ -1,32 +1,34 @@
 # Selection Annotation
 
+**English** | [简体中文](README.zh-CN.md)
+
 [![Build](https://github.com/zuozh11/idea-annotation/actions/workflows/build.yml/badge.svg)](https://github.com/zuozh11/idea-annotation/actions/workflows/build.yml)
 [![Get from JetBrains Marketplace](https://img.shields.io/badge/Get%20from-JetBrains%20Marketplace-000000?logo=jetbrains&logoColor=white)](https://plugins.jetbrains.com/plugin/33955-selection-annotation)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/33955)](https://plugins.jetbrains.com/plugin/33955-selection-annotation)
 
-![Selection Annotation 图标](src/main/resources/META-INF/pluginIcon.svg)
+![Selection Annotation icon](src/main/resources/META-INF/pluginIcon.svg)
 
-Selection Annotation 是 IntelliJ IDEA 插件，用于把编辑器选区整理成可直接粘贴到 Codex 等对话中的 Markdown 批注：自动携带本地绝对路径、准确行号、所选原文和可选评论。
+Selection Annotation is an IntelliJ IDEA plugin that turns an editor selection into a Markdown annotation ready to paste into Codex or another conversation. It automatically includes the local absolute path, accurate line numbers, the selected text, and an optional comment.
 
-![Selection Annotation 批注输入框](docs/images/selection-annotation.png)
+![Selection Annotation input](docs/images/selection-annotation.png)
 
-## 功能
+## Features
 
-- 从 IDEA 原生浮动代码工具栏或编辑器右键菜单打开“批注…”。
-- 在选区下方显示固定宽度的多行批注输入框，评论允许为空。
-- 使用当前编辑器缓冲区内容，支持未保存文件和具有真实本地路径的 Scratch 文件。
-- 自动计算 1-based 单行或多行范围，选区末尾换行不会误计下一行。
-- 复制成功后保留原选区；复制失败时保留已输入评论以便重试。
-- 用户界面提供英文和简体中文资源。
+- Open **Annotate…** from the native IDEA floating code toolbar or the editor context menu.
+- Enter an optional multiline comment in a fixed-width input beneath the selection.
+- Use the current editor buffer, including unsaved files and Scratch files with a real local path.
+- Calculate 1-based single-line or multiline ranges without counting an unselected next line after a trailing newline.
+- Keep the original selection after a successful copy and preserve the entered comment when clipboard writing fails.
+- Follow the IDE language with English and Simplified Chinese user-interface text.
 
-## 使用方式
+## Usage
 
-1. 在本地文本文件中选中一段文字。
-2. 点击浮动代码工具栏中的 **批注…**，或从编辑器右键菜单选择 **批注…**。
-3. 输入可选评论，点击 **复制**。
-4. 将剪贴板内容粘贴到目标对话。
+1. Select text in a local text file.
+2. Click **Annotate…** in the floating code toolbar, or choose **Annotate…** from the editor context menu.
+3. Enter an optional comment and click **Copy**.
+4. Paste the clipboard content into the target conversation.
 
-示例输出：
+Example output:
 
 ```markdown
 > **Source:**
@@ -37,35 +39,35 @@ Selection Annotation 是 IntelliJ IDEA 插件，用于把编辑器选区整理�
 >     second line
 >
 > **User comment:**
-> 请检查这里的边界条件
+> Please check the boundary conditions here.
 >
 ```
 
-## 兼容范围
+## Compatibility
 
-- IntelliJ IDEA 2026.2 及以上，最低平台构建为 `262`。
-- Java/JBR 25。
-- 普通本地文本文件和具有真实本地路径的 Scratch 文件。
-- 不支持 Diff 编辑器、无稳定本地路径的临时文件和多个非空选区。
+- IntelliJ IDEA 2026.2 or later, with minimum platform build `262`.
+- Java/JBR 25.
+- Regular local text files and Scratch files with a real local path.
+- Diff editors, temporary files without a stable local path, and multiple non-empty selections are not supported.
 
-## 安装
+## Installation
 
-本地构建后，在 IDEA 中打开 **Settings → Plugins → ⚙ → Install Plugin from Disk…**，选择 `build/distributions/` 下的 ZIP。
+After building locally, open **Settings → Plugins → ⚙ → Install Plugin from Disk…** in IDEA and select the ZIP under `build/distributions/`.
 
-Marketplace 页面：[Selection Annotation](https://plugins.jetbrains.com/plugin/33955-selection-annotation)。
+Marketplace page: [Selection Annotation](https://plugins.jetbrains.com/plugin/33955-selection-annotation).
 
-## 开发
+## Development
 
-项目为单模块 Java Gradle 工程，使用仓库内的 Gradle Wrapper：
+This is a single-module Java Gradle project that uses the committed Gradle Wrapper:
 
 ```bash
-./gradlew buildPlugin   # 生成可安装 ZIP
-./gradlew runIde        # 启动带插件的 IDEA 沙箱
-./gradlew test          # 运行测试
-./gradlew verifyPlugin  # 运行 IntelliJ Plugin Verifier
+./gradlew buildPlugin   # Build the installable ZIP
+./gradlew runIde        # Launch an IDEA sandbox with the plugin
+./gradlew test          # Run tests
+./gradlew verifyPlugin  # Run IntelliJ Plugin Verifier
 ```
 
-如果系统默认 Java 不是 25，可使用 IDEA 自带 JBR：
+If the default system Java is not version 25, use the JBR bundled with IDEA:
 
 ```bash
 export JAVA_HOME="/Applications/IntelliJ IDEA.app/Contents/jbr/Contents/Home"
@@ -73,15 +75,15 @@ export PATH="$JAVA_HOME/bin:$PATH"
 ./gradlew buildPlugin
 ```
 
-可安装 ZIP 输出到 `build/distributions/`，构建产物不进入 Git。
+The installable ZIP is written to `build/distributions/`; build output is not committed.
 
-## 发布维护
+## Release Maintenance
 
-- 当前版本由 `build.gradle.kts` 的 `version` 定义。
-- 当前版本 Marketplace/GitHub Release 说明维护在 `RELEASE_NOTES.md`，完整历史维护在 `CHANGELOG.md`。
-- 首次建档、签名证书、GitHub Secrets、标签触发、失败处理和发布证据见 [JetBrains Marketplace 发布指南](docs/publishing.md)。
-- Developer EULA 的仓库副本见 [EULA.md](EULA.md)，Marketplace 使用[公开版本](https://gist.github.com/zuozh11/ea84559dc08fa8efeba10d0c5a1152e1)。
+- The current version is defined by `version` in `build.gradle.kts`.
+- Marketplace and GitHub Release notes for the current version are maintained in `RELEASE_NOTES.md`; complete history is maintained in `CHANGELOG.md`.
+- Initial Marketplace setup, signing certificates, GitHub Secrets, tag-triggered releases, failure handling, and release evidence are documented in the [JetBrains Marketplace publishing guide](docs/publishing.md).
+- The repository copy of the Developer EULA is available in [EULA.md](EULA.md), and Marketplace uses the [public version](https://gist.github.com/zuozh11/ea84559dc08fa8efeba10d0c5a1152e1).
 
-## 数据边界
+## Data Boundary
 
-插件只读取当前选区与本地文件路径，并把生成的批注写入系统剪贴板；不发送网络请求，不收集遥测，也不持久化批注历史。绝对路径会出现在剪贴板内容中，粘贴到外部服务前请确认目标和内容。
+The plugin only reads the current selection and local file path, then writes the generated annotation to the system clipboard. It does not send network requests, collect telemetry, or persist annotation history. Absolute paths are included in clipboard content, so verify the destination and content before pasting into an external service.
