@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 - 2026-08-31
+
+- Centered the annotation input beneath the full selected text range.
+
 ## 1.0.1 - 2026-08-31
 
 - Added the native floating code toolbar entry and kept the editor context-menu entry.

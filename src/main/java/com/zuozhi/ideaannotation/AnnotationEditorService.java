@@ -129,12 +129,28 @@ public final class AnnotationEditorService {
             panel.add(footer, BorderLayout.SOUTH);
             panel.setPreferredSize(INPUT_SIZE);
 
-            Point selectionPoint = editor.offsetToXY(context.selectionStart());
+            Document document = editor.getDocument();
+            int selectionLeft = Integer.MAX_VALUE;
+            int selectionRight = Integer.MIN_VALUE;
+            for (int line = context.startLine() - 1; line < context.endLine(); line++) {
+                int segmentStart = Math.max(
+                    context.selectionStart(),
+                    document.getLineStartOffset(line)
+                );
+                int segmentEnd = Math.min(
+                    context.selectionEnd(),
+                    document.getLineEndOffset(line)
+                );
+                selectionLeft = Math.min(selectionLeft, editor.offsetToXY(segmentStart).x);
+                selectionRight = Math.max(selectionRight, editor.offsetToXY(segmentEnd).x);
+            }
             Rectangle visibleArea = editor.getScrollingModel().getVisibleArea();
+            int centeredX = selectionLeft
+                + (selectionRight - selectionLeft - INPUT_SIZE.width) / 2;
             int cardX = Math.max(
                 visibleArea.x,
                 Math.min(
-                    selectionPoint.x,
+                    centeredX,
                     visibleArea.x + visibleArea.width - INPUT_SIZE.width
                 )
             );
