@@ -2,15 +2,15 @@
 
 ## Solution
 
-Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `Selection`，使用标准 Markdown 代码块保持内容格式，并面向通用 Agent 提供无需专有语法即可理解的文件与行号定位。用户既可通过现有“批注…”入口为单个或多个选区输入一条共享评论，也可通过可配置快捷键直接复制不含评论的载荷；没有文本选区时，快捷键以及编辑器或 Project View 的 `Copy Path` 菜单可以复制独立的文件或目录链接。输入框支持可对调的确认与换行按键。
+Selection Annotation `1.1.0` 直接把每个选区的来源链接和原样代码放入 Markdown 引用块，在引用块外固定保留 `_User comment:_` 与底部分隔线，使单光标、多光标和空评论共享同一紧凑模板。用户可通过“批注…”输入一条共享评论，也可用快捷键直接复制带空评论标记的批注载荷；没有文本选区时，快捷键以及编辑器或 Project View 的 `Copy Path` 菜单复制独立文件或目录链接。输入框支持可对调的确认与换行按键。
 
 ## Scope
 
 ### IDEA 插件范围
 
 - 把单光标和多光标选区统一序列化为一个带来源链接的 Markdown 批注载荷。
-- 自动识别 `Selection` 代码块语言，并在无法识别时提供确定性回退。
-- 非空评论使用保真代码块；空评论完全省略 `User comment`。
+- 自动识别选区代码块语言，并在无法识别时提供确定性回退。
+- `_User comment:_` 始终显示；非空评论使用普通多行文本，空评论只保留标记。
 - 支持多个非空选区及一条共享评论。
 - 新增可由 IDEA Keymap 配置的直接复制 Action，默认使用 `Option+C`/`Alt+C`。
 - 支持从无文本选区的编辑器或 Project View 单选、多选文件/目录复制独立 Markdown 路径链接。
@@ -35,7 +35,7 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 ## User Stories
 
 1. As an Agent user, I want each selection to combine its source link and exact text, so that any Markdown-capable Agent can understand what code I am referring to.
-2. As a developer, I want selected text and comments preserved in code blocks, so that indentation, symbols and line breaks are not changed by Markdown rendering.
+2. As a developer, I want selected text preserved in code blocks and comments preserved as exact multiline text, so that indentation, symbols and line breaks are retained.
 3. As a developer, I want to copy several editor selections as one compact annotation, so that I can discuss related locations without repeating the same comment.
 4. As a keyboard user, I want a configurable shortcut to copy selected context without opening an input box, so that I can send context with minimal interaction.
 5. As a user with a preferred multiline input habit, I want to choose whether `Enter` or `Shift+Enter` confirms the annotation, so that the input follows my normal workflow.
@@ -43,15 +43,17 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 
 ## Requirements
 
-### 通用 Selection 批注载荷
+### 批注载荷结构
 
 #### IDEA 插件逻辑
 
 - 批注载荷使用标准 Markdown，不依赖 Codex、ChatGPT 或其他单一 Agent 的专有指令。
-- 批注正文位于一个外层 Markdown block quote 中；每个结构行和内容物理行都显式包含外层引用 marker，不依赖 lazy continuation。
-- 正文结束后在 block quote 外固定输出一个 `---` footer，footer 前后各保留一个空行，便于用户连续粘贴多份批注。
-- 单个有效选区使用标题 `Selection`；多个有效选区按视觉位置顺序使用 `Selection 1`、`Selection 2`……。
-- 每个 `Selection` 依次包含一条来源链接和一个所选文本代码块，不再输出独立的 `Source`、`Selected text` 标题。
+- 每个有效选区直接输出一条来源链接和紧随其后的 fenced code block；二者的每个物理行都显式包含外层 `> ` marker。
+- 不输出 `Source`、`Selected text`、`Selection`、`Selection N` 或其他章节/编号标题。
+- 单光标只输出一组“来源链接 + 代码块”。
+- 多光标按视觉位置顺序重复多组“来源链接 + 代码块”，相邻组之间使用一个裸 `>` 行分隔。
+- 全部选区引用内容结束后退出 block quote，固定输出 `_User comment:_`。
+- 非空评论与 `_User comment:_`、`---` 之间各保留一个空行；空评论使用空模板留白。footer 后保留一个空行，便于连续粘贴多份批注。
 - 来源链接文字使用文件名和 1-based 行号：
   - 单行选区：`<文件名> (line <行号>)`。
   - 多行选区：`<文件名> (lines <起始行>-<结束行>)`。
@@ -59,7 +61,7 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 - 起始行取首个实际选中字符所在行；结束行取最后一个实际选中字符所在行。结束 offset 为排他值，选区末尾换行符不得把下一行计入范围。
 - 链接文字和链接目标必须输出为有效 Markdown，同时保持用户可见文件名和真实绝对路径语义。
 
-### Selection 代码块
+### 选区代码块
 
 #### IDEA 插件逻辑
 
@@ -75,42 +77,44 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 
 #### IDEA 插件逻辑
 
+- `_User comment:_` 固定输出在全部选区引用内容之后，并位于 block quote 之外。
+- `_User comment:_` 始终输出，包括评论为空、仅含空白以及 `Option+C`/`Alt+C` 直接复制选区载荷。
 - 输入评论整体去除首尾空白；内部换行、缩进、空格和 Markdown 符号保持原样。
-- 非空评论在全部 `Selection` 之后输出一个 `User comment` 章节，并使用不带语言标识的 fenced code block。
-- 评论代码围栏长度取至少三个且严格长于评论中最长的连续反引号序列。
-- 评论为空或仅包含空白时，整个 `User comment` 章节都不输出，不保留标题、空代码块或占位行。
-- 多光标批注的一条非空共享评论只输出一次，不复制到每个 `Selection` 中。
+- 非空评论不使用 block quote 或 fenced code block；`_User comment:_` 后先保留一个空行，再按普通多行文本输出评论，评论后保留一个空行再输出 `---`。
+- 空评论只输出 `_User comment:_`，不添加占位符、空代码块或其他文字。
+- 多光标批注的一条共享评论只在全部选区之后输出一次。
 
 ### 单光标载荷格式
 
 #### IDEA 插件逻辑
 
-- 单光标非空评论的标准输出为：
+- 单光标空评论和直接复制选区载荷统一输出：
 
 ````markdown
-> **Selection:**
-> [SupplierProductAppService.java (line 198)](/absolute/path/SupplierProductAppService.java)
+> [AnnotationEditorService.java (lines 59-61)](/Users/zuozhi/workspace/zuozhi/idea-annotation/src/main/java/com/zuozhi/ideaannotation/AnnotationEditorService.java)
 > ```java
-> Optional<Product> result = bySystem.get(code);
+> ler controller = controllers.remove(editor);
+>         if (controller != null) {
+>             controller.dis
 > ```
->
-> **User comment:**
-> ```
-> 检查空值处理
-> ```
+_User comment:_
+
+
 
 ---
 
 ````
 
-- 单光标空评论省略 `User comment`：
+- 单光标非空评论的标准输出为：
 
 ````markdown
-> **Selection:**
-> [SupplierProductAppService.java (line 198)](/absolute/path/SupplierProductAppService.java)
+> [AnnotationEditorService.java (line 71)](/Users/zuozhi/workspace/zuozhi/idea-annotation/src/main/java/com/zuozhi/ideaannotation/AnnotationEditorService.java)
 > ```java
-> Optional<Product> result = bySystem.get(code);
+> INPUT_SIZE
 > ```
+_User comment:_
+
+123123
 
 ---
 
@@ -122,38 +126,32 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 
 - 同一编辑器至少存在一个非空选区时允许批注；没有选区的 Caret 忽略。
 - 有效选区按 `CaretModel.getAllCarets()` 提供的视觉位置顺序排列，不依赖主 Caret 或 Caret 创建顺序。
-- 相同、相邻或重叠选区不合并、不去重；每个非空 Caret 分别生成一个编号 `Selection`。
-- 所有编号 `Selection` 位于同一个外层 block quote 中，Selection 之间不使用 `---` 分隔。
-- 多光标非空共享评论的标准输出为：
+- 相同、相邻或重叠选区不合并、不去重；每个非空 Caret 分别生成一组来源链接和代码块。
+- 全部组选区内容位于同一个外层 block quote 中，相邻组之间使用一个裸 `>` 行，不编号、不使用 `---` 分隔。
+- 多光标空评论和直接复制选区载荷统一输出：
 
 ````markdown
-> **Selection 1:**
-> [SupplierProductAppService.java (line 198)](/absolute/path/SupplierProductAppService.java)
+> [AnnotationEditorService.java (line 70)](/Users/zuozhi/workspace/zuozhi/idea-annotation/src/main/java/com/zuozhi/ideaannotation/AnnotationEditorService.java)
 > ```java
-> Optional<Product> result = bySystem.get(code);
+> final
 > ```
 >
-> **Selection 2:**
-> [SupplierProductAppService.java (lines 210-212)](/absolute/path/SupplierProductAppService.java)
+> [AnnotationEditorService.java (line 71)](/Users/zuozhi/workspace/zuozhi/idea-annotation/src/main/java/com/zuozhi/ideaannotation/AnnotationEditorService.java)
 > ```java
-> if (StringUtils.isBlank(code)) {
->     return Optional.empty();
-> }
+> final
 > ```
->
-> **User comment:**
-> ```
-> 检查这两处空值处理是否一致
-> ```
+_User comment:_
+
+
 
 ---
 
 ````
 
-- 多光标空评论和直接复制载荷省略 `User comment`。
+- 多光标的一条非空共享评论只输出一次：`_User comment:_` 后空一行输出评论，评论后空一行输出 `---`。
 - 整份载荷先完整生成，再一次性写入剪贴板；全部成功或全部失败，不产生部分复制。
-- 单光标、多光标、空评论、非空评论和直接复制载荷均在最后一个代码围栏后追加同一个 footer：先保留一个空行，再输出 `---`，随后保留一个空行。
-- footer 不属于外层 block quote；整份字符串固定以 `---\n\n` 结束，不在多个 `Selection` 之间追加分隔线。
+- 空评论和直接复制选区载荷使用空模板留白；非空评论前后各保留一个空行。所有批注载荷只输出一次 `---`，随后保留一个空行。
+- footer 不属于 block quote；整份字符串固定以 `---\n\n` 结束。
 
 ### 批注输入交互
 
@@ -197,7 +195,7 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 - 用户可以在 IDEA **Settings → Keymap** 中修改或删除快捷键；快捷键冲突由 IDEA 原生冲突提示和 Keymap 配置处理。
 - 插件不为 `Option+C`/`Alt+C` 与字符输入或其他 Action 的冲突增加额外兼容逻辑。
 - Action 根据当前焦点上下文决定输出：
-  - 编辑器聚焦且至少有一个非空选区时，生成不含 `User comment` 的单光标或多光标批注载荷。
+  - 编辑器聚焦且至少有一个非空选区时，生成带固定 `_User comment:_` 空标记的单光标或多光标批注载荷。
   - 编辑器聚焦且没有任何非空选区时，复制当前编辑器文件的独立路径链接，不附加光标行号。
   - Project View 聚焦且选中一个或多个有效本地文件或目录时，按显示顺序复制对应独立路径链接。
 - 快捷键只读取当前焦点的数据上下文，不使用其他失焦界面的残留选中项。
@@ -228,14 +226,14 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 #### IDEA 插件逻辑
 
 - 继续只支持具有真实本地绝对路径的文本编辑器；普通本地文件和具有真实本地路径的 Scratch 可用，未保存修改仍读取当前编辑器缓冲区。
-- Diff、无稳定本地路径的编辑器、二进制文件和无非空选区场景不显示或不启用相关入口，且不额外提示。
+- Diff、无稳定本地路径的编辑器和二进制文件不显示或不启用批注入口。无非空选区时“批注…”入口不可用，但快捷直接复制仍按当前文件或 Project View 路径链接规则工作。
 - 继续以 IntelliJ IDEA `2026.2`、Java/JBR `25`、`sinceBuild = "262"` 且不设置 `untilBuild` 为兼容基线。
 - 人工验收至少覆盖：
-  - 单行与多行单选区的新 `Selection` 格式。
+  - 单行与多行单选区的无标题“来源链接 + 代码块”格式。
   - 语言 ID、扩展名和空语言标识三级回退。
   - 所选文本或评论包含反引号围栏时的内容保真。
-  - 空评论省略章节与非空评论代码块。
-  - 多光标视觉排序、空 Caret 忽略、重叠选区保留和单块编号结构。
+  - 空评论固定保留 `_User comment:_`，非空评论使用普通多行文本。
+  - 多光标视觉排序、空 Caret 忽略、重叠选区保留和裸 `>` 组选区分隔。
   - 多光标共享评论只输出一次。
   - 所有载荷底部只输出一次 `---`，其前后空行和连续粘贴结果符合固定 footer 规则。
   - `Option+C`/`Alt+C` 直接复制及 IDEA Keymap 重绑。
@@ -258,14 +256,14 @@ Selection Annotation `1.1.0` 将来源链接和所选文本合并为统一的 `S
 | 版本 | `1.1.0` | 用户确认 |
 | 消费端定位 | 面向通用 Agent 的标准、自包含 Markdown；Codex 仅作为当前参考验收 Agent | [批注载荷消费端兼容范围](./wayfinder/01-批注载荷消费端兼容范围.md) |
 | 来源链接 | 链接文字包含文件名与行号，目标只包含真实绝对路径，不承诺点击跳行 | [Source 可点击定位方案](./wayfinder/02-Source可点击定位方案.md) |
-| 载荷章节 | 删除独立 `Source`、`Selected text`；统一为包含来源链接和代码块的 `Selection` | [Selection 来源链接契约](./wayfinder/04-Selection来源链接契约.md) |
+| 载荷结构 | 不显示任何章节或编号标题；每个选区直接输出来源链接与代码块，多组选区以裸 `>` 分隔 | [来源链接与选区代码契约](./wayfinder/04-来源链接与选区代码契约.md) |
 | Selection 代码块 | 语言依次取 IDEA 语言 ID、文件扩展名或空标识；动态增加反引号围栏长度 | [Selected text 代码块与语言标识](./wayfinder/05-Selected-text代码块与语言标识.md) |
-| User comment | 非空评论使用无语言代码块；空评论完全省略章节 | [User comment 代码块边界](./wayfinder/06-User-comment代码块边界.md) |
+| User comment | `_User comment:_` 始终在引用块外显示；非空评论使用普通文本，空评论只保留标记 | [User comment 文本边界](./wayfinder/06-User-comment文本边界.md) |
 | 直接复制 | 独立 Action，不打开输入框，由 IDEA Keymap 配置 | [快捷键与直接复制入口](./wayfinder/07-快捷键与直接复制入口.md) |
 | 输入键 | 应用级设置对调 `Enter`/`Shift+Enter`；按钮和提示使用“确认” | [输入确认与换行设置](./wayfinder/08-输入确认与换行设置.md) |
 | 多光标顺序 | 忽略空 Caret，按视觉位置排列，不依赖主 Caret | [多光标选区模型与排序](./wayfinder/09-多光标选区模型与排序.md) |
-| 多选区载荷 | 一个外层引用内输出编号 `Selection`，内部不使用分隔线；整份载荷底部追加一次 `---\n\n`，原子复制 | [多选区批注载荷组合规则](./wayfinder/10-多选区批注载荷组合规则.md) |
-| 多光标评论 | 一个输入框填写共享评论，在全部 `Selection` 后只输出一次 | [多光标批注交互](./wayfinder/11-多光标批注交互.md) |
+| 多选区载荷 | 一个引用块内按视觉顺序重复无标题选区组，以裸 `>` 分隔；空评论使用空模板，非空评论前后各空一行，均以 `---\n\n` 结束并原子复制 | [多选区批注载荷组合规则](./wayfinder/10-多选区批注载荷组合规则.md) |
+| 多光标评论 | 一个输入框填写共享评论，在全部选区引用内容后以普通文本只输出一次；空评论保留标记 | [多光标批注交互](./wayfinder/11-多光标批注交互.md) |
 | 默认快捷键 | macOS `Option+C`，Windows/Linux `Alt+C`，冲突交由 IDEA Keymap | [默认快捷键平台范围](./wayfinder/12-默认快捷键平台范围.md) |
 | 无选区快捷复制 | 编辑器无选区时复制当前文件；Project View 支持单选或多选文件/目录路径链接 | [无选区文件或目录链接复制](./wayfinder/13-无选区文件或目录链接复制.md) |
 | Copy Path 菜单 | 编辑器和 Project View 右键菜单提供独立路径复制；Project View 支持文件和目录混合多选 | [文件与编辑器 Copy Path 菜单](./wayfinder/14-文件与编辑器Copy-Path菜单.md) |

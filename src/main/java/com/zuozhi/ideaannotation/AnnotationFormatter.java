@@ -11,29 +11,26 @@ final class AnnotationFormatter {
 
     static String format(AnnotationContext context, String rawComment) {
         StringBuilder payload = new StringBuilder();
-        boolean multiple = context.selections().size() > 1;
         for (int index = 0; index < context.selections().size(); index++) {
             if (index > 0) {
                 payload.append(">\n");
             }
             AnnotationContext.Selection selection = context.selections().get(index);
-            payload.append("> **Selection");
-            if (multiple) {
-                payload.append(' ').append(index + 1);
-            }
-            payload.append(":**\n")
-                .append("> ")
+            payload.append("> ")
                 .append(selectionLink(context, selection))
                 .append('\n');
             appendCodeBlock(payload, selection.text(), context.language());
         }
 
         String comment = rawComment.strip();
-        if (!comment.isEmpty()) {
-            payload.append(">\n> **User comment:**\n");
-            appendCodeBlock(payload, comment, "");
+        payload.append("_User comment:_\n");
+        if (comment.isEmpty()) {
+            return payload.append("\n\n\n---\n\n").toString();
         }
-        return payload.append("\n---\n\n").toString();
+        return payload.append('\n')
+            .append(comment)
+            .append("\n\n---\n\n")
+            .toString();
     }
 
     static String formatPaths(List<VirtualFile> files) {
