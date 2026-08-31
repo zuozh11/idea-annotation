@@ -4,7 +4,7 @@
 
 - 插件 ID：`com.zuozhi.ideaannotation`，发布后不可变更。
 - Marketplace 名称：`Selection Annotation`。原名称含 `IDEA`，不符合 Marketplace 对插件名称不得包含 JetBrains 产品名称的审核规则。
-- 当前版本：`1.1.1`；最低兼容构建：`262`；不设置 `until-build`。
+- 当前版本：`1.1.2`；最低兼容构建：`262`；不设置 `until-build`。
 - 首次版本由手工工作流生成签名 ZIP 和 GitHub Release，再由维护者在 Marketplace 页面创建插件条目并上传该 ZIP。
 - Marketplace 条目存在后，后续稳定版本由与 Gradle `version` 完全一致的标签自动发布，例如 `1.0.2`。
 - `1.0.x` 用于缺陷修复；新增向后兼容功能使用 `1.1.0`。
@@ -136,6 +136,17 @@ gh secret set PUBLISH_TOKEN
 | 后续 Release 工作流 URL 与 `publish`、`github-release-after-publish` job 结论 | Marketplace 上传请求与 GitHub Release 创建成功或失败 |
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
+
+### 2026-09-01 1.1.2 当前状态
+
+- 用户明确要求本次跳过沙箱界面确认和人工验收；沙箱启动及后续 CI 均不作为人工验收证据。
+- 提交 `e4c3b08` 已推送到 `main`；[Build #33423190281](https://github.com/zuozh11/idea-annotation/actions/runs/33423190281) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
+- 稳定标签 `1.1.2` 指向提交 `e4c3b08` 并已推送。
+- [Release #33423717229](https://github.com/zuozh11/idea-annotation/actions/runs/33423717229) 已完成版本校验、构建、Plugin Verifier、签名、Marketplace 上传和 GitHub Release 创建；`package`、`publish` 与 `github-release-after-publish` job 均成功。
+- [GitHub Release 1.1.2](https://github.com/zuozh11/idea-annotation/releases/tag/1.1.2) 已创建，正式资产为 `idea-annotation-1.1.2-signed.zip`。
+- Marketplace `1.1.2` 更新编号为 `1158184`；2026-09-01 02:19 CST API 状态为 `approve=false`、`listed=false`，插件状态为 `hasUnapprovedUpdate=true`，兼容范围为 `262.0+`。这证明 Marketplace 已接受上传但仍待 JetBrains 审核，不代表已经公开上架。
+- GitHub Release 中的签名版 `1.1.2` 已安装到正式 IntelliJ IDEA 2026.2 用户插件目录；安装包内元数据显示版本为 `1.1.2`、插件 ID 为 `com.zuozhi.ideaannotation`、`since-build=262`。当前正式 IDEA 进程仍在运行，需要重启后才会加载新版本。
+- 被替换的旧版插件目录保留在 `/tmp/idea-annotation-before-1.1.2-20260901022037`，可在临时目录尚未清理时用于回退。
 
 ### 2026-09-01 1.1.1 当前状态
 
