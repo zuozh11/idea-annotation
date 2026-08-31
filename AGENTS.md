@@ -34,9 +34,13 @@ Use four-space indentation and UTF-8 files. Follow Java naming: `UpperCamelCase`
 
 Use JUnit through the IntelliJ Platform test framework when tests are required. Name tests `*Test` and mirror production package paths under `src/test`. Prefer coverage of multiline selections, comments, absolute source paths, line-boundary behavior, and exact clipboard text. Run only the smallest check needed for the requested result; Marketplace publication changes require `buildPlugin` and `verifyPlugin`.
 
+For ordinary plugin behavior or UI changes, validation consists only of starting or restarting the IDEA sandbox with `./gradlew runIde` and handing it to the user for manual acceptance. Do not additionally run automated tests, formatter/string probes, hashes, `buildPlugin`, or Plugin Verifier unless the user explicitly requests them or the change is being prepared for Marketplace publication. A successfully started sandbox proves only that the plugin loaded; only the user's confirmation proves manual acceptance.
+
 ## Commit & Pull Request Guidelines
 
 Use the existing short Conventional-style subjects such as `feat: ...` or `fix: ...`. Keep each commit independently understandable and directly reversible. Pull requests should explain the user-visible flow, list affected files, include screenshots for UI changes, and state the Gradle command actually run.
+
+Use `[skip ci]` for commits that change only documentation, README content, screenshots, or release evidence and will not be used as a stable release-tag target. Do not skip CI for production code, tests, Gradle/build configuration, version changes, GitHub Actions workflows, or any commit that will be tagged for Marketplace release.
 
 ## Security & Configuration
 
