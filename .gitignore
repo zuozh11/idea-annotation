@@ -1,6 +1,7 @@
 .gradle/
 .intellijPlatform/
 .idea/
+.agents/
 build/
 out/
 *.iml
