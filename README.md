@@ -50,7 +50,7 @@ Selection Annotation 是 IntelliJ IDEA 插件，用于把编辑器选区整理�
 
 本地构建后，在 IDEA 中打开 **Settings → Plugins → ⚙ → Install Plugin from Disk…**，选择 `build/distributions/` 下的 ZIP。
 
-Marketplace `1.0.1` 已提交 JetBrains 审核，当前状态为 **Under review**。插件页面：[Selection Annotation](https://plugins.jetbrains.com/plugin/33955-selection-annotation)；真实审核证据见 [发布指南的当前状态](docs/publishing.md#2026-08-31-当前状态)。
+Marketplace 页面：[Selection Annotation](https://plugins.jetbrains.com/plugin/33955-selection-annotation)。
 
 ## 开发
 
