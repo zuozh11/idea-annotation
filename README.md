@@ -1,5 +1,9 @@
 # Selection Annotation
 
+[![Build](https://github.com/zuozh11/idea-annotation/actions/workflows/build.yml/badge.svg)](https://github.com/zuozh11/idea-annotation/actions/workflows/build.yml)
+[![Get from JetBrains Marketplace](https://img.shields.io/badge/Get%20from-JetBrains%20Marketplace-000000?logo=jetbrains&logoColor=white)](https://plugins.jetbrains.com/plugin/33955-selection-annotation)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/33955)](https://plugins.jetbrains.com/plugin/33955-selection-annotation)
+
 ![Selection Annotation 图标](src/main/resources/META-INF/pluginIcon.svg)
 
 Selection Annotation 是 IntelliJ IDEA 插件，用于把编辑器选区整理成可直接粘贴到 Codex 等对话中的 Markdown 批注：自动携带本地绝对路径、准确行号、所选原文和可选评论。
