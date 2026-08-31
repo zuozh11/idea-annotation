@@ -1,0 +1,4 @@
+interface:
+  display_name: "Selection Annotation 沙箱交接"
+  short_description: "启动 IDEA sandbox 并交给用户人工验收"
+  default_prompt: "使用 $sandbox-selection-annotation 启动当前仓库 sandbox，并在确认项目可见后交给我验收。"

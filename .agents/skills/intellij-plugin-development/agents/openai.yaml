@@ -1,0 +1,4 @@
+interface:
+  display_name: "IntelliJ 插件开发"
+  short_description: "按本仓库约束开发和诊断 IntelliJ Platform 插件"
+  default_prompt: "检查当前仓库与相关官方 IntelliJ Platform 文档后，按项目规则完成插件开发任务。"

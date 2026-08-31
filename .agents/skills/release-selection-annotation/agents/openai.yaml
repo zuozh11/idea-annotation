@@ -1,0 +1,4 @@
+interface:
+  display_name: "发布 Selection Annotation"
+  short_description: "发布稳定版本、安装签名插件并维护 Actions 缓存和证据"
+  default_prompt: "使用 $release-selection-annotation 发布当前稳定版本并完成证据收口。"

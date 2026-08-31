@@ -1,55 +1,57 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
+## Project Direction
 
-This repository contains the single-module Java IntelliJ IDEA plugin **Selection Annotation**. Keep it as one Gradle module.
+This repository contains **Selection Annotation**, an IntelliJ Platform plugin that turns editor selections and focused paths into source-aware Markdown. Preserve the current single-module Java shape while it remains the smallest design for the requested behavior; architecture, platform version, and compatibility range may evolve through explicit product work.
 
-- `src/main/java/com/zuozhi/ideaannotation/` owns editor context detection, the action, inline input UI, localization access, and Markdown formatting.
-- `src/main/resources/META-INF/plugin.xml` owns stable plugin metadata and action/extension registration; `pluginIcon.svg` is the Marketplace/IDE plugin icon.
-- `src/main/resources/messages/` contains the default English bundle and `zh_CN` bundle.
-- `docs/scratch/01-1.0.0-IDEA批注插件/PRD.md` is the behavior baseline. Read it before changing plugin behavior or interaction.
-- `docs/publishing.md` is the release runbook. Read it before changing metadata, compatibility, signing, GitHub Actions, versions, or Marketplace publication.
-- `EULA.md` is the repository copy of the public Developer EULA. Keep both copies synchronized when changing license terms; the public URL is recorded in `docs/publishing.md`.
+Reply in Simplified Chinese. Verify current external facts on the live web when the task depends on them; repository-local work should use the checked-in state as authority.
 
-Keep the action, editor-owned UI service, selection context, and formatter separate only while their current responsibilities remain distinct.
+## Sources of Truth
 
-## Build, Test, and Development Commands
+- Read the current implementation under `src/main/` before changing behavior. Versioned documents under `docs/scratch/` preserve the decisions of their release; use the document relevant to the feature, but do not restore retired behavior merely because it appears in an older PRD.
+- Read `build.gradle.kts` for the current plugin version, Java toolchain, target IDE, Gradle plugin, and compatibility range. Do not carry those values forward from instructions or past sessions.
+- Read `src/main/resources/META-INF/plugin.xml` for the current plugin identity, extensions, actions, icons, and Marketplace-facing metadata.
+- Read `.github/workflows/` and `docs/publishing.md` before changing CI, signing, publication, versions, compatibility, or release evidence. The checked-in workflows define what currently runs.
+- Read `docs/CONTEXT.md` for project terminology and load only the relevant rules from `docs/rules/` through the project-knowledge protocol below.
 
-Use the committed Gradle wrapper with Java/JBR 25. The target platform is IntelliJ IDEA 2026.2 (`262`).
+## Repository Layout
 
-```bash
-./gradlew buildPlugin   # Compile and package the installable plugin ZIP
-./gradlew runIde        # Launch a sandbox IntelliJ IDEA with the plugin enabled
-./gradlew test          # Run tests when the requested change needs them
-```
+- `src/main/java/com/zuozhi/ideaannotation/` owns editor context detection, actions, editor-owned UI, localization access, settings, clipboard feedback, and Markdown formatting.
+- `src/main/resources/META-INF/plugin.xml` owns action and extension registration.
+- `src/main/resources/messages/` contains the default English bundle and Simplified Chinese bundle.
+- `docs/scratch/` contains versioned product decisions and prototypes.
+- `docs/publishing.md` is the release runbook and evidence ledger.
+- `.agents/skills/` contains reusable project workflows.
 
-Use `IDEA_HOME=/Applications/IntelliJ IDEA.app/Contents` when a local IDEA installation must replace the downloaded target platform. Build output belongs under `build/` and stays out of Git.
+Keep action dispatch, context extraction, editor-owned UI, settings, clipboard feedback, and formatting separate while their responsibilities remain distinct. Prefer deleting or reusing code before adding new abstractions.
 
-## Coding Style & Naming Conventions
+## Workflow Routing
 
-Use four-space indentation and UTF-8 files. Follow Java naming: `UpperCamelCase` classes, `lowerCamelCase` methods and variables, and lowercase package segments under `com.zuozhi.ideaannotation`. Name actions with an `Action` suffix. Keep clipboard output deterministic and preserve the exact Markdown blockquote contract in the PRD. Put every user-visible string in both resource bundles.
+- Use `$intellij-plugin-development` for implementation, diagnosis, API migration, `plugin.xml`, localization, Gradle, or compatibility work.
+- Use `$sandbox-selection-annotation` when a behavior or UI change must be started in the IDEA sandbox and handed to the user for acceptance.
+- Use `$release-selection-annotation` for stable publication, signed-package installation, release evidence, or shared Gradle-cache rebuilding.
 
-## Testing Guidelines
+These Skills route to current repository state; they are not substitutes for inspecting the affected code and configuration.
 
-Use JUnit through the IntelliJ Platform test framework when tests are required. Name tests `*Test` and mirror production package paths under `src/test`. Prefer coverage of multiline selections, comments, absolute source paths, line-boundary behavior, and exact clipboard text. Run only the smallest check needed for the requested result. Pull requests and stable release tags skip tests and Plugin Verifier. Pull requests build the plugin; stable tags build, sign, publish, and create the GitHub Release. Do not duplicate CI checks locally unless the user explicitly requests them.
+## Coding Conventions
 
-For ordinary plugin behavior or UI changes, validation consists only of starting or restarting the IDEA sandbox with the current repository open, using `JAVA_HOME="/Applications/IntelliJ IDEA.app/Contents/jbr/Contents/Home" ./gradlew runIde --args="$PWD"`, and handing it to the user for manual acceptance. Before handoff, confirm that the current repository is visibly open in the sandbox. Do not additionally run automated tests, formatter/string probes, hashes, `buildPlugin`, or Plugin Verifier unless the user explicitly requests them or the change is being prepared for Marketplace publication. A successfully started sandbox with the repository open proves only that the plugin loaded in the intended project context; only the user's confirmation proves manual acceptance.
+- Use four-space indentation and UTF-8. Follow Java naming conventions under `com.zuozhi.ideaannotation`; action classes use the `Action` suffix.
+- Keep clipboard output deterministic. Treat the currently accepted Markdown shape as an external protocol and update the relevant product document when intentionally changing it.
+- Put user-visible text in the maintained resource bundles and access it through the bundle class. Keep IDs, protocol markers, paths, and other non-display values out of localization bundles.
+- Build with the committed Gradle wrapper and keep generated output under ignored build directories.
 
-## Commit & Pull Request Guidelines
+## Evidence and Validation
 
-Use the existing short Conventional-style subjects such as `feat: ...` or `fix: ...`. Keep each commit independently understandable and directly reversible. Pull requests should explain the user-visible flow, list affected files, include screenshots for UI changes, and state the Gradle command actually run.
+Choose the smallest evidence that proves the requested result. Ordinary behavior and UI work normally ends with a sandbox handoff and user acceptance; use the sandbox Skill rather than adding unrelated tests, hashes, builds, or verifiers. When the user explicitly requests a different validation boundary, follow that boundary and report it.
 
-Normal `main` pushes do not run CI, so `[skip ci]` is unnecessary for direct documentation pushes. It may be used for documentation-only pull requests that will not become a stable release-tag target. Do not skip CI for production code, tests, Gradle/build configuration, version changes, GitHub Actions workflows, or any commit that will be tagged for Marketplace release.
+Keep these evidence states distinct: static code inspection, successful compilation or packaging, sandbox startup with the repository open, user acceptance, signed package creation, Marketplace upload acceptance, JetBrains approval, and public availability. One state never implies the next.
 
-## Security & Configuration
+## Commits, Pushes, and Releases
 
-The plugin ID is `com.zuozhi.ideaannotation`; do not change it after Marketplace publication. The Marketplace numeric ID is `33955`, and the display name is `Selection Annotation`. Keep `sinceBuild` at `262` and omit `untilBuild` unless the compatibility policy is explicitly changed.
-
-Use stable SemVer: `1.0.x` for fixes and `1.1.0` for new backward-compatible functionality. Update `version`, `RELEASE_NOTES.md`, and `CHANGELOG.md` together. A normal `main` push does not run CI; pull requests only build, while a matching stable tag skips tests and Plugin Verifier and performs the signed build, Marketplace upload, and GitHub Release creation. The Marketplace entry already exists, so all versions after `1.0.1` must be released with a matching stable tag; do not use the initial Release `workflow_dispatch` path for updates. The Build workflow's manual dispatch on `main` is reserved for rebuilding the shared Gradle cache and never publishes. Obtain explicit confirmation before pushing a version tag because it uploads Marketplace and creates the GitHub Release.
-
-Keep README content stable and user-facing. Do not put temporary Marketplace review or moderation status in `README.md`; record exact upload, review, approval, and publication evidence only in `docs/publishing.md`.
-
-Keep Marketplace tokens, certificate chains, private keys, key passwords, signing files, local IDE state, and sandbox data out of the repository. Supply publication credentials only through the documented environment variables or GitHub Actions Secrets. Treat a successful build, GitHub Release, and Marketplace approval as separate evidence states.
+- Use short Conventional-style subjects. Each commit should represent one complete, independently understandable and directly reversible delivery result.
+- Pull requests should describe the user-visible flow, affected files, screenshots for UI changes, and the command actually run.
+- Pushing ordinary commits and pushing a stable version tag are different actions. A stable tag is a publication action and requires explicit authorization immediately before it is pushed.
+- Keep credentials, private keys, certificate chains, passwords, signing files, local IDE state, and sandbox data outside the repository.
 
 <!-- project-knowledge:start -->
 ## 项目知识
