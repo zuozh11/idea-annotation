@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 - 2026-08-31
+
+- Combined source links and exact selected text into fenced Markdown Selection sections.
+- Added multi-caret annotations with one shared optional comment.
+- Added direct Option+C/Alt+C copying for selections and focused files or directories.
+- Added Copy Path menus for the editor and Project View.
+- Added an application setting that swaps Enter and Shift+Enter confirmation behavior.
+
 ## 1.0.2 - 2026-08-31
 
 - Centered the annotation input beneath the full selected text range.

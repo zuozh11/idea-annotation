@@ -7,7 +7,7 @@ This repository contains the single-module Java IntelliJ IDEA plugin **Selection
 - `src/main/java/com/zuozhi/ideaannotation/` owns editor context detection, the action, inline input UI, localization access, and Markdown formatting.
 - `src/main/resources/META-INF/plugin.xml` owns stable plugin metadata and action/extension registration; `pluginIcon.svg` is the Marketplace/IDE plugin icon.
 - `src/main/resources/messages/` contains the default English bundle and `zh_CN` bundle.
-- `docs/scratch/01-IDEA批注插件/PRD.md` is the behavior baseline. Read it before changing plugin behavior or interaction.
+- `docs/scratch/01-1.0.0-IDEA批注插件/PRD.md` is the behavior baseline. Read it before changing plugin behavior or interaction.
 - `docs/publishing.md` is the release runbook. Read it before changing metadata, compatibility, signing, GitHub Actions, versions, or Marketplace publication.
 - `EULA.md` is the repository copy of the public Developer EULA. Keep both copies synchronized when changing license terms; the public URL is recorded in `docs/publishing.md`.
 

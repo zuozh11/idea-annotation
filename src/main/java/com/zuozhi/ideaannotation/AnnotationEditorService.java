@@ -39,7 +39,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
+import java.text.AttributedCharacterIterator;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -93,7 +97,13 @@ public final class AnnotationEditorService {
                 }
             };
             commentField.setOneLineMode(false);
-            commentField.setPlaceholder(IdeaAnnotationBundle.message("annotation.input.placeholder"));
+            boolean confirmWithShiftEnter = AnnotationSettings.getInstance()
+                .confirmWithShiftEnter;
+            commentField.setPlaceholder(IdeaAnnotationBundle.message(
+                confirmWithShiftEnter
+                    ? "annotation.input.placeholder.shiftConfirm"
+                    : "annotation.input.placeholder.enterConfirm"
+            ));
             commentField.setShowPlaceholderWhenFocused(true);
             commentField.setBackground(background);
             commentField.setPreferredSize(JBUI.size(INPUT_SIZE.width - 20, 62));
@@ -104,15 +114,15 @@ public final class AnnotationEditorService {
             JButton cancelButton = new JButton(
                 IdeaAnnotationBundle.message("annotation.action.cancel")
             );
-            JButton copyButton = new JButton(
-                IdeaAnnotationBundle.message("annotation.action.copy")
+            JButton confirmButton = new JButton(
+                IdeaAnnotationBundle.message("annotation.action.confirm")
             );
             cancelButton.setMargin(JBUI.insets(3, 12));
-            copyButton.setMargin(JBUI.insets(3, 12));
+            confirmButton.setMargin(JBUI.insets(3, 12));
             JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, JBUI.scale(8), 0));
             actions.setOpaque(false);
             actions.add(cancelButton);
-            actions.add(copyButton);
+            actions.add(confirmButton);
 
             JPanel footer = new JPanel(new BorderLayout(JBUI.scale(8), 0));
             footer.setOpaque(false);
@@ -130,15 +140,18 @@ public final class AnnotationEditorService {
             panel.setPreferredSize(INPUT_SIZE);
 
             Document document = editor.getDocument();
+            AnnotationContext.Selection anchorSelection = context.lastSelection();
             int selectionLeft = Integer.MAX_VALUE;
             int selectionRight = Integer.MIN_VALUE;
-            for (int line = context.startLine() - 1; line < context.endLine(); line++) {
+            for (int line = anchorSelection.startLine() - 1;
+                 line < anchorSelection.endLine();
+                 line++) {
                 int segmentStart = Math.max(
-                    context.selectionStart(),
+                    anchorSelection.startOffset(),
                     document.getLineStartOffset(line)
                 );
                 int segmentEnd = Math.min(
-                    context.selectionEnd(),
+                    anchorSelection.endOffset(),
                     document.getLineEndOffset(line)
                 );
                 selectionLeft = Math.min(selectionLeft, editor.offsetToXY(segmentStart).x);
@@ -165,7 +178,7 @@ public final class AnnotationEditorService {
                 .showWhenFolded(true);
             Inlay<ComponentInlayRenderer<JPanel>> inlay = ComponentInlayKt.addComponentInlay(
                 editor,
-                editor.getDocument().getLineEndOffset(context.endLine() - 1),
+                editor.getDocument().getLineEndOffset(anchorSelection.endLine() - 1),
                 properties,
                 inlayContainer,
                 ComponentInlayAlignment.STRETCH_TO_CONTENT_WIDTH
@@ -185,6 +198,21 @@ public final class AnnotationEditorService {
                 new CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)),
                 commentField
             );
+            boolean[] composingText = {false};
+            commentField.getFocusTarget().addInputMethodListener(new InputMethodListener() {
+                @Override
+                public void inputMethodTextChanged(InputMethodEvent event) {
+                    AttributedCharacterIterator text = event.getText();
+                    int characterCount = text == null
+                        ? 0
+                        : text.getEndIndex() - text.getBeginIndex();
+                    composingText[0] = characterCount > event.getCommittedCharacterCount();
+                }
+
+                @Override
+                public void caretPositionChanged(InputMethodEvent event) {
+                }
+            });
             commentField.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent event) {
@@ -203,7 +231,7 @@ public final class AnnotationEditorService {
             });
 
             cancelButton.addActionListener(event -> closeInput());
-            copyButton.addActionListener(event -> {
+            Runnable confirm = () -> {
                 try {
                     String payload = AnnotationFormatter.format(context, commentField.getText());
                     CopyPasteManager.copyTextToClipboard(payload);
@@ -215,18 +243,31 @@ public final class AnnotationEditorService {
                     );
                     commentField.requestFocusInWindow();
                 }
-            });
+            };
+            confirmButton.addActionListener(event -> confirm.run());
+            DumbAwareAction.create(event -> {
+                if (!composingText[0]) {
+                    confirm.run();
+                }
+            }).registerCustomShortcutSet(
+                new CustomShortcutSet(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_ENTER,
+                    confirmWithShiftEnter ? InputEvent.SHIFT_DOWN_MASK : 0
+                )),
+                commentField
+            );
 
             SwingUtilities.invokeLater(commentField::requestFocusInWindow);
         }
 
         private Point successPoint(AnnotationContext context, Dimension balloonSize) {
             Document document = editor.getDocument();
+            AnnotationContext.Selection selection = context.lastSelection();
             int anchorOffset;
-            if (context.startLine() == context.endLine()) {
-                anchorOffset = context.selectionEnd();
+            if (selection.startLine() == selection.endLine()) {
+                anchorOffset = selection.endOffset();
             } else {
-                anchorOffset = document.getLineEndOffset(context.startLine() - 1);
+                anchorOffset = document.getLineEndOffset(selection.startLine() - 1);
             }
             Point anchor = editor.offsetToXY(anchorOffset);
             Rectangle visible = editor.getScrollingModel().getVisibleArea();

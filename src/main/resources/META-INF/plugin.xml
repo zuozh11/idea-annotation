@@ -15,6 +15,9 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <editorFactoryListener implementation="com.zuozhi.ideaannotation.AnnotationEditorFactoryListener"/>
+        <applicationConfigurable
+            id="com.zuozhi.ideaannotation.settings"
+            instance="com.zuozhi.ideaannotation.AnnotationSettingsConfigurable"/>
     </extensions>
 
     <actions resource-bundle="messages.IdeaAnnotationBundle">
@@ -27,6 +30,18 @@
                 anchor="after"
                 relative-to-action="ReformatCode"/>
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+        <action
+            id="com.zuozhi.ideaannotation.CopyContextAction"
+            class="com.zuozhi.ideaannotation.CopyContextAction">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt C"/>
+        </action>
+        <action
+            id="com.zuozhi.ideaannotation.CopyPathAction"
+            class="com.zuozhi.ideaannotation.CopyPathAction"
+            icon="AllIcons.Actions.Copy">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

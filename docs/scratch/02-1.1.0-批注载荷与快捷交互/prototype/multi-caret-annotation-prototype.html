@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多光标批注交互原型</title>
+<style>
+:root{color-scheme:dark;--bg:#1e1f22;--panel:#2b2d30;--line:#393b40;--text:#dfe1e5;--muted:#9da0a8;--blue:#3574f0;--select:#214283;--yellow:#f5c359;--green:#57965c}*{box-sizing:border-box}body{margin:0;background:#151619;color:var(--text);font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{height:100vh;display:grid;grid-template-rows:44px 1fr;background:var(--bg)}.top{display:flex;align-items:center;gap:18px;padding:0 18px;border-bottom:1px solid #303238;background:#25262a}.title{font-weight:650}.path{color:var(--muted);font-size:12px}.workspace{position:relative;overflow:auto;padding:18px 0 120px}.editor{width:min(980px,calc(100vw - 64px));margin:auto;border:1px solid #303238;background:#202124;min-height:610px;box-shadow:0 16px 50px #0005}.tabs{height:38px;display:flex;align-items:center;padding:0 14px;border-bottom:1px solid #33353a;background:#27282c}.tab{padding:10px 14px;border-bottom:2px solid var(--blue)}.code{font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;padding:14px 0}.row{display:grid;grid-template-columns:54px 1fr;min-height:23px}.ln{color:#666a73;text-align:right;padding-right:16px;user-select:none}.src{white-space:pre;padding-right:18px}.kw{color:#cf8e6d}.type{color:#56a8f5}.str{color:#6aab73}.sel{background:var(--select);border-radius:2px;outline:1px solid #3969b4}.caret{border-right:1px solid #fff}.toolbar{position:absolute;background:#34363b;border:1px solid #4a4d54;border-radius:8px;padding:5px;box-shadow:0 8px 20px #0008;display:flex;gap:4px}.toolbar button,.btn{border:0;border-radius:5px;background:transparent;color:var(--text);padding:7px 10px;cursor:pointer}.toolbar button:hover,.btn:hover{background:#45484f}.btn.primary{background:var(--blue);color:#fff}.btn.secondary{background:#3b3d42}.card{background:#2b2d30;border:1px solid #52555c;border-radius:12px;box-shadow:0 14px 34px #0008;padding:12px}.inlay{width:520px;margin:6px 0 8px 130px}.inlay textarea,.comment-input{width:100%;min-height:70px;resize:vertical;border:0;outline:0;border-radius:7px;background:#222326;color:var(--text);padding:10px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}.actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:9px}.hint{margin-right:auto;color:var(--muted);font-size:12px}.state{position:fixed;top:58px;right:18px;width:280px;background:#202125ed;border:1px solid #3b3d43;border-radius:10px;padding:12px;box-shadow:0 10px 30px #0006;z-index:5}.state h3{margin:0 0 8px;font-size:13px}.state pre{margin:0;color:#b8bbc3;font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}.stepper{display:flex;align-items:center;gap:8px;margin-bottom:9px}.stepper .dots{display:flex;gap:5px}.dot{width:8px;height:8px;border-radius:50%;background:#555962}.dot.active{background:var(--blue)}.batch{position:absolute;top:58px;right:30px;width:390px;max-height:calc(100vh - 160px);overflow:auto;z-index:4}.batch h2{font-size:15px;margin:0 0 4px}.batch .sub{color:var(--muted);font-size:12px;margin-bottom:12px}.item{border:1px solid #41444a;border-radius:8px;padding:10px;margin:9px 0;background:#25262a}.item-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px}.line-ref{color:#70a5ff}.mini-code{color:#b8bbc3;background:#1d1e21;border-radius:5px;padding:7px;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.batch textarea{min-height:52px}.switcher{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:8px;background:#f4f4f5;color:#17181a;border-radius:999px;padding:7px 10px;box-shadow:0 12px 34px #0009}.switcher button{width:34px;height:30px;border:0;border-radius:999px;background:#dedfe2;cursor:pointer;font-size:16px}.variant-label{min-width:230px;text-align:center;font-weight:650}.question{position:fixed;left:18px;bottom:22px;max-width:350px;background:#25262aed;border:1px solid #3c3f45;border-radius:9px;padding:10px 12px;color:#c9cbd1;font-size:12px;z-index:10}.badge{display:inline-block;border-radius:999px;padding:2px 7px;background:#3b3d42;color:#cfd1d6;font-size:11px;margin-left:6px}.hidden{display:none!important}@media(max-width:850px){.state{display:none}.batch{right:10px;width:360px}.inlay{margin-left:70px}.question{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><span class="title">Selection Annotation · 多光标原型</span><span class="path">SupplierProductAppService.java</span></div>
+  <main class="workspace">
+    <section class="editor">
+      <div class="tabs"><span class="tab">SupplierProductAppService.java</span></div>
+      <div id="editorContent" class="code"></div>
+    </section>
+    <div id="toolbar" class="toolbar"><button id="annotate">✎ 批注…</button><button title="直接复制">⌥C</button></div>
+    <aside id="state" class="state"><h3>原型状态</h3><pre id="stateText"></pre></aside>
+  </main>
+</div>
+<div class="question">问题：多光标下，“批注…”应该如何让用户为三个选区填写评论？三种方案只验证交互模型，不代表最终视觉。</div>
+<div class="switcher"><button id="prev">←</button><div id="variantLabel" class="variant-label"></div><button id="next">→</button></div>
+<script>
+const variants={
+ A:{name:'共享一条评论',desc:'一次输入，同一评论应用到所有选区'},
+ B:{name:'逐选区评论',desc:'按视觉顺序逐个填写，每个选区独立'},
+ C:{name:'批量评论面板',desc:'同时查看所有选区和评论后统一确认'}
+};
+const selections=[
+ {line:198,code:'Optional<Product> findByCode(String code)',comment:''},
+ {line:210,code:'if (StringUtils.isBlank(code)) {',comment:''},
+ {line:215,code:'return bySystem.getOrDefault(code, Optional.empty());',comment:''}
+];
+const sourceLines=[
+ ['193','    <span class="kw">public</span> <span class="type">Optional&lt;Product&gt;</span> load(String id) {'],
+ ['194','        <span class="kw">return</span> repository.find(id);'],
+ ['195','    }'],['196',''],['197','    <span class="kw">public</span> <span class="type">Optional&lt;Product&gt;</span> findByCode(String code) {'],
+ ['198','        <span class="sel" data-s="0">Optional&lt;Product&gt; result = bySystem.get(code);</span>'],
+ ['199','        <span class="kw">return</span> result;'],['200','    }'],['201',''],['202','    <span class="kw">private</span> Optional&lt;Product&gt; resolve(String code) {'],
+ ['203','        Map&lt;String, Optional&lt;Product&gt;&gt; bySap = index.sap();'],['204','        Map&lt;String, Optional&lt;Product&gt;&gt; bySystem = index.system();'],['205',''],
+ ['206','        <span class="kw">if</span> (code == <span class="kw">null</span>) {'],['207','            <span class="kw">return</span> Optional.empty();'],['208','        }'],['209',''],
+ ['210','        <span class="sel" data-s="1"><span class="kw">if</span> (StringUtils.isBlank(code)) {</span>'],
+ ['211','            <span class="kw">return</span> Optional.empty();'],['212','        }'],['213',''],['214','        <span class="kw">return</span>'],
+ ['215','            <span class="sel caret" data-s="2">bySystem.getOrDefault(code, Optional.empty());</span>'],
+ ['216','    }'],['217','}']
+];
+let current=(new URLSearchParams(location.search).get('variant')||'A').toUpperCase();
+if(!variants[current]) current='A';
+let open=false,step=0,shared='';
+const editorContent=document.querySelector('#editorContent');
+function baseEditor(){editorContent.innerHTML=sourceLines.map(([n,c])=>`<div class="row"><span class="ln">${n}</span><span class="src">${c||' '}</span></div>`).join('');}
+function positionToolbar(){const editor=document.querySelector('.editor').getBoundingClientRect();const t=document.querySelector('#toolbar');t.style.left=(editor.left+360)+'px';t.style.top='126px';}
+function inputCard(body,extra=''){return `<div class="card inlay">${extra}<textarea id="activeInput" placeholder="输入批注内容（可为空）… Enter 确认，Shift+Enter 换行">${body}</textarea><div class="actions"><span class="hint">Esc 取消</span><button class="btn secondary" onclick="closeInput()">取消</button><button class="btn primary" onclick="confirmInput()">确认</button></div></div>`}
+function render(){baseEditor();document.querySelector('#variantLabel').textContent=`${current} · ${variants[current].name}`;document.querySelector('#toolbar').classList.toggle('hidden',open);document.querySelectorAll('.sel').forEach((e,i)=>{e.style.opacity=current==='B'&&open&&i!==step?'.42':'1'});
+ if(open&&current==='A'){editorContent.insertAdjacentHTML('beforeend',inputCard(shared,`<div class="stepper"><strong>3 个选区</strong><span class="badge">共享评论</span></div>`));wire('shared');}
+ if(open&&current==='B'){const dots=selections.map((_,i)=>`<span class="dot ${i===step?'active':''}"></span>`).join('');editorContent.insertAdjacentHTML('beforeend',inputCard(selections[step].comment,`<div class="stepper"><strong>选区 ${step+1}/3 · line ${selections[step].line}</strong><span class="dots">${dots}</span><button class="btn" onclick="moveStep(-1)">上一个</button><button class="btn" onclick="moveStep(1)">下一个</button></div>`));wire('step');}
+ if(open&&current==='C'){document.querySelector('.workspace').insertAdjacentHTML('beforeend',`<div id="batch" class="card batch"><h2>批量批注 · 3 个选区</h2><div class="sub">每个选区可填写独立评论，留空则不输出 User comment</div>${selections.map((s,i)=>`<div class="item"><div class="item-head"><strong>选区 ${i+1}</strong><span class="line-ref">line ${s.line}</span></div><div class="mini-code">${escapeHtml(s.code)}</div><textarea class="comment-input" data-i="${i}" placeholder="可为空">${escapeHtml(s.comment)}</textarea></div>`).join('')}<div class="actions"><button class="btn secondary" onclick="closeInput()">取消</button><button class="btn primary" onclick="confirmInput()">全部确认</button></div></div>`);document.querySelectorAll('.comment-input').forEach(e=>e.oninput=()=>selections[+e.dataset.i].comment=e.value);}
+ updateState();positionToolbar();}
+function wire(mode){const t=document.querySelector('#activeInput');if(!t)return;t.focus();t.oninput=()=>{if(mode==='shared')shared=t.value;else selections[step].comment=t.value;updateState()};t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();confirmInput()}if(e.key==='Escape')closeInput()};}
+function updateState(){const comments=current==='A'?selections.map((s,i)=>`#${i+1}: ${shared||'(空，不输出 User comment)'}`):selections.map((s,i)=>`#${i+1}: ${s.comment||'(空，不输出 User comment)'}`);document.querySelector('#stateText').textContent=`方案: ${current} ${variants[current].name}\n输入框: ${open?'打开':'关闭'}\n当前选区: ${current==='B'&&open?step+1:'全部'}\n\n${comments.join('\n')}`;}
+function closeInput(){open=false;render()}
+function confirmInput(){if(current==='B'&&step<2){step++;render();return}open=false;render();alert('原型：已生成 3 块批注载荷')}
+function moveStep(d){const t=document.querySelector('#activeInput');if(t)selections[step].comment=t.value;step=Math.max(0,Math.min(2,step+d));render()}
+function switchVariant(d){const keys=Object.keys(variants),i=keys.indexOf(current);current=keys[(i+d+keys.length)%keys.length];open=false;step=0;history.replaceState(null,'',`?variant=${current}`);render()}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.querySelector('#annotate').onclick=()=>{open=true;render()};document.querySelector('#prev').onclick=()=>switchVariant(-1);document.querySelector('#next').onclick=()=>switchVariant(1);window.addEventListener('keydown',e=>{if(['TEXTAREA','INPUT'].includes(document.activeElement.tagName))return;if(e.key==='ArrowLeft')switchVariant(-1);if(e.key==='ArrowRight')switchVariant(1)});window.addEventListener('resize',positionToolbar);render();
+</script>
+</body>
+</html>
