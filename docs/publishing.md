@@ -4,7 +4,7 @@
 
 - 插件 ID：`com.zuozhi.ideaannotation`，发布后不可变更。
 - Marketplace 名称：`Selection Annotation`。原名称含 `IDEA`，不符合 Marketplace 对插件名称不得包含 JetBrains 产品名称的审核规则。
-- 当前版本：`1.0.2`；最低兼容构建：`262`；不设置 `until-build`。
+- 当前版本：`1.1.0`；最低兼容构建：`262`；不设置 `until-build`。
 - 首次版本由手工工作流生成签名 ZIP 和 GitHub Release，再由维护者在 Marketplace 页面创建插件条目并上传该 ZIP。
 - Marketplace 条目存在后，后续稳定版本由与 Gradle `version` 完全一致的标签自动发布，例如 `1.0.2`。
 - `1.0.x` 用于缺陷修复；新增向后兼容功能使用 `1.1.0`。
