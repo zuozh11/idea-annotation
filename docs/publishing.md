@@ -137,7 +137,18 @@ gh secret set PUBLISH_TOKEN
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
-### 2026-08-31 当前状态
+### 2026-09-01 当前状态
+
+- 用户已在正式 IDEA 环境完成人工验收，并明确确认 `1.1.0` 可以发布。
+- 提交 `96cc704` 已推送到 `main`；[Build #33415986376](https://github.com/zuozh11/idea-annotation/actions/runs/33415986376) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
+- 稳定标签 `1.1.0` 指向提交 `96cc704` 并已推送。
+- [Release #33416449991](https://github.com/zuozh11/idea-annotation/actions/runs/33416449991) 已完成版本校验、构建、Plugin Verifier、签名、Marketplace 上传和 GitHub Release 创建；`package`、`publish` 与 `github-release-after-publish` job 均成功。
+- [GitHub Release 1.1.0](https://github.com/zuozh11/idea-annotation/releases/tag/1.1.0) 已创建，正式资产为 `idea-annotation-1.1.0-signed.zip`。
+- Marketplace `1.1.0` 的更新编号为 `1158169`；2026-09-01 00:59 CST 后台准确状态为 **Under review**，兼容范围显示 `262.0+`，大小为 `37.75 KB`。这证明 Marketplace 已接受上传并进入 JetBrains 审核，不代表已经公开上架。
+- Marketplace 公开页当前仍展示 `1.0.2`，说明 `1.1.0` 尚未通过审核并替换公开版本；同时也证明此前的 `1.0.2` 已在 2026-09-01 前通过审核并公开。
+- README 已更新为 `1.1.0` 功能说明，批注输入框截图为 `docs/images/selection-annotation.png`，Codex 输出效果截图为 `docs/images/selection-annotation-output.png`。
+
+### 2026-08-31 状态
 
 - 提交 `34f6d65` 已推送到 `main`；[Build #33394375112](https://github.com/zuozh11/idea-annotation/actions/runs/33394375112) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
 - 本地使用 IDEA 自带 JBR 25 执行 `clean buildPlugin verifyPlugin` 成功；Plugin Verifier 1.410 对正式 `IU-262.9437.185` 的结论为 Compatible，保留 3 条 `ComponentInlay` 实验 API 提示。
