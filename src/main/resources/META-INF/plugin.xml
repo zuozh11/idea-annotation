@@ -1,9 +1,14 @@
 <idea-plugin>
     <id>com.zuozhi.ideaannotation</id>
-    <name>IDEA Annotation</name>
-    <vendor>zuozhi</vendor>
+    <name>Selection Annotation</name>
+    <vendor url="https://github.com/zuozh11" email="zuozhi22@outlook.com">zuozhi</vendor>
     <description><![CDATA[
-        Select local text, add an optional comment, and copy a source-aware Markdown annotation.
+        Copy a selected code or text fragment as a source-aware Markdown annotation.
+        <ul>
+            <li>Open the annotation input from the floating code toolbar or editor context menu.</li>
+            <li>Include the absolute source path and selected line range automatically.</li>
+            <li>Add an optional multiline comment and copy the result to the clipboard.</li>
+        </ul>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>

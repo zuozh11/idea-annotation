@@ -2,43 +2,48 @@
 
 ## Project Structure & Module Organization
 
-This repository is currently an initial scaffold: only project-local Codex configuration exists in `.codex/config.toml`. Keep the IntelliJ IDEA plugin as a single Gradle module when implementation begins. Use the standard layout:
+This repository contains the single-module Java IntelliJ IDEA plugin **Selection Annotation**. Keep it as one Gradle module.
 
-- `src/main/java/` or `src/main/kotlin/` for plugin actions, dialogs, and clipboard formatting.
-- `src/main/resources/META-INF/plugin.xml` for plugin metadata and action registration.
-- `src/test/` for formatter and action tests.
-- `src/main/resources/icons/` for plugin-owned icons, if any.
+- `src/main/java/com/zuozhi/ideaannotation/` owns editor context detection, the action, inline input UI, localization access, and Markdown formatting.
+- `src/main/resources/META-INF/plugin.xml` owns stable plugin metadata and action/extension registration; `pluginIcon.svg` is the Marketplace/IDE plugin icon.
+- `src/main/resources/messages/` contains the default English bundle and `zh_CN` bundle.
+- `docs/scratch/01-IDEA批注插件/PRD.md` is the behavior baseline. Read it before changing plugin behavior or interaction.
+- `docs/publishing.md` is the release runbook. Read it before changing metadata, compatibility, signing, GitHub Actions, versions, or Marketplace publication.
 
-Place the editor context-menu action, comment dialog, and annotation formatter in separate, purpose-named classes only when each has distinct behavior.
+Keep the action, editor-owned UI service, selection context, and formatter separate only while their current responsibilities remain distinct.
 
 ## Build, Test, and Development Commands
 
-Use the Gradle wrapper committed with the plugin project:
+Use the committed Gradle wrapper with Java/JBR 25. The target platform is IntelliJ IDEA 2026.2 (`262`).
 
 ```bash
 ./gradlew buildPlugin   # Compile and package the installable plugin ZIP
 ./gradlew runIde        # Launch a sandbox IntelliJ IDEA with the plugin enabled
-./gradlew test          # Run unit and platform tests
-./gradlew verifyPlugin  # Check compatibility and plugin structure before release
+./gradlew test          # Run tests when the requested change needs them
+./gradlew verifyPlugin  # Run Plugin Verifier for release changes
 ```
 
-Do not rely on a machine-wide Gradle installation. Update this section if task names differ from the generated IntelliJ Platform Gradle project.
+Use `IDEA_HOME=/Applications/IntelliJ IDEA.app/Contents` when a local IDEA installation must replace the downloaded target platform. Build output belongs under `build/` and stays out of Git.
 
 ## Coding Style & Naming Conventions
 
-Use four-space indentation and UTF-8 files. Follow standard Java or Kotlin naming: `UpperCamelCase` classes, `lowerCamelCase` methods and variables, and lowercase package segments such as `com.zuozhi.ideaannotation`. Name actions with an `Action` suffix and dialogs with a `Dialog` suffix. Keep clipboard output formatting deterministic and preserve the required Markdown blockquote structure.
+Use four-space indentation and UTF-8 files. Follow Java naming: `UpperCamelCase` classes, `lowerCamelCase` methods and variables, and lowercase package segments under `com.zuozhi.ideaannotation`. Name actions with an `Action` suffix. Keep clipboard output deterministic and preserve the exact Markdown blockquote contract in the PRD. Put every user-visible string in both resource bundles.
 
 ## Testing Guidelines
 
-Use JUnit through the IntelliJ Platform test framework. Name tests `*Test` and mirror production package paths under `src/test`. Prioritize tests for multiline selections, comments, absolute source paths, and exact clipboard text. Run `./gradlew test` before submitting behavior changes.
+Use JUnit through the IntelliJ Platform test framework when tests are required. Name tests `*Test` and mirror production package paths under `src/test`. Prefer coverage of multiline selections, comments, absolute source paths, line-boundary behavior, and exact clipboard text. Run only the smallest check needed for the requested result; Marketplace publication changes require `buildPlugin` and `verifyPlugin`.
 
 ## Commit & Pull Request Guidelines
 
-No Git history exists yet, so there is no established commit convention. Use short imperative subjects such as `Add editor annotation action`. Keep each commit independently understandable and reversible. Pull requests should explain the user-visible flow, list affected files, and include screenshots for dialog or context-menu changes. Link related issues when available and state which Gradle command was run.
+Use the existing short Conventional-style subjects such as `feat: ...` or `fix: ...`. Keep each commit independently understandable and directly reversible. Pull requests should explain the user-visible flow, list affected files, include screenshots for UI changes, and state the Gradle command actually run.
 
 ## Security & Configuration
 
-Keep secrets, signing keys, local IDE state, and generated sandbox data out of the repository. Treat `.codex/config.toml` as project configuration; avoid adding user-specific absolute paths.
+The plugin ID is `com.zuozhi.ideaannotation`; do not change it after Marketplace publication. The display name is `Selection Annotation`. Keep `sinceBuild` at `262` and omit `untilBuild` unless the compatibility policy is explicitly changed.
+
+Use stable SemVer: `1.0.x` for fixes and `1.1.0` for new backward-compatible functionality. Update `version`, `RELEASE_NOTES.md`, and `CHANGELOG.md` together. A matching stable tag triggers Marketplace upload, so obtain explicit confirmation before pushing a version tag.
+
+Keep Marketplace tokens, certificate chains, private keys, key passwords, signing files, local IDE state, and sandbox data out of the repository. Supply publication credentials only through the documented environment variables or GitHub Actions Secrets. Treat a successful build, GitHub Release, and Marketplace approval as separate evidence states.
 
 <!-- project-knowledge:start -->
 ## 项目知识
