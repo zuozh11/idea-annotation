@@ -139,12 +139,14 @@ gh secret set PUBLISH_TOKEN
 
 ### 2026-08-31 当前状态
 
-- 提交 `8ba31ff` 已推送到 `main`；[Build #33384420918](https://github.com/zuozh11/idea-annotation/actions/runs/33384420918) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
-- GitHub 仓库尚无 Actions Secrets、版本标签或 GitHub Release。
-- Marketplace 公共搜索未发现名称 `Selection Annotation`、旧名称 `IDEA Annotation` 或插件 ID `com.zuozhi.ideaannotation` 的精确公开条目；这不能排除隐藏或待审核条目。
+- 提交 `aca445b` 已推送到 `main`；[Build #33385642197](https://github.com/zuozh11/idea-annotation/actions/runs/33385642197) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
+- `CERTIFICATE_CHAIN`、`PRIVATE_KEY`、`PRIVATE_KEY_PASSWORD`、`PUBLISH_TOKEN` 已配置为私有仓库 GitHub Actions Secrets；秘密值未写入仓库。
 - 使用 IDEA 自带 JBR 25 执行 `buildPlugin verifyPlugin` 成功，生成 `build/distributions/idea-annotation-1.0.1.zip`。
 - Plugin Verifier 1.410 对官方 `IU-262.8665.337` 的结论为 Compatible；无内部 API 使用，保留 3 条 `ComponentInlay` 实验 API 提示。报告位于 `build/reports/pluginVerifier/IU-262.8665.337/`。
-- Marketplace 尚未上传，JetBrains 审核尚未开始。
+- [Release #33387119602](https://github.com/zuozh11/idea-annotation/actions/runs/33387119602) 已完成构建、校验和签名，并创建 [GitHub Release 1.0.1](https://github.com/zuozh11/idea-annotation/releases/tag/1.0.1)；资产为 `idea-annotation-1.0.1-signed.zip`。
+- Marketplace 插件编号为 `33955`，插件页面为 [Selection Annotation](https://plugins.jetbrains.com/plugin/33955-selection-annotation)，版本 `1.0.1` 的更新编号为 `1157596`。
+- Marketplace 于 2026-08-31 接受首次上传，后台准确状态为 **Under review**，兼容范围显示 `262.0+`；这证明已进入 JetBrains 审核，不代表已公开上架。
+- Developer EULA 使用[公开 Gist](https://gist.github.com/zuozh11/ea84559dc08fa8efeba10d0c5a1152e1)，仓库副本为 `EULA.md`。
 
 ## 官方依据
 
