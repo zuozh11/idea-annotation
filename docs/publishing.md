@@ -4,7 +4,7 @@
 
 - 插件 ID：`com.zuozhi.ideaannotation`，发布后不可变更。
 - Marketplace 名称：`Selection Annotation`。原名称含 `IDEA`，不符合 Marketplace 对插件名称不得包含 JetBrains 产品名称的审核规则。
-- 当前版本：`1.0.1`；最低兼容构建：`262`；不设置 `until-build`。
+- 当前版本：`1.0.2`；最低兼容构建：`262`；不设置 `until-build`。
 - 首次版本由手工工作流生成签名 ZIP 和 GitHub Release，再由维护者在 Marketplace 页面创建插件条目并上传该 ZIP。
 - Marketplace 条目存在后，后续稳定版本由与 Gradle `version` 完全一致的标签自动发布，例如 `1.0.2`。
 - `1.0.x` 用于缺陷修复；新增向后兼容功能使用 `1.1.0`。
@@ -139,6 +139,12 @@ gh secret set PUBLISH_TOKEN
 
 ### 2026-08-31 当前状态
 
+- 提交 `34f6d65` 已推送到 `main`；[Build #33394375112](https://github.com/zuozh11/idea-annotation/actions/runs/33394375112) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
+- 本地使用 IDEA 自带 JBR 25 执行 `clean buildPlugin verifyPlugin` 成功；Plugin Verifier 1.410 对正式 `IU-262.9437.185` 的结论为 Compatible，保留 3 条 `ComponentInlay` 实验 API 提示。
+- [Release #33394808978](https://github.com/zuozh11/idea-annotation/actions/runs/33394808978) 已完成 `1.0.2` 构建、校验、签名、Marketplace 上传和 GitHub Release 创建；首次上传因 `PUBLISH_TOKEN` 含非 ASCII 字符在请求发送前失败，旋转 Token 并重跑失败任务后成功。
+- [GitHub Release 1.0.2](https://github.com/zuozh11/idea-annotation/releases/tag/1.0.2) 已创建，资产为 `idea-annotation-1.0.2-signed.zip`。
+- Marketplace `1.0.2` 的更新编号为 `1157735`；2026-08-31 21:26 CST 后台准确状态为 **Under review**，兼容范围显示 `262.0+`。这证明 Marketplace 已接受上传并进入 JetBrains 审核，不代表已公开上架。
+- 正式 IntelliJ IDEA 2026.2 用户插件目录已安装签名版 `1.0.2`；IDEA 重启后加载新版本。
 - 提交 `aca445b` 已推送到 `main`；[Build #33385642197](https://github.com/zuozh11/idea-annotation/actions/runs/33385642197) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
 - `CERTIFICATE_CHAIN`、`PRIVATE_KEY`、`PRIVATE_KEY_PASSWORD`、`PUBLISH_TOKEN` 已配置为私有仓库 GitHub Actions Secrets；秘密值未写入仓库。
 - 使用 IDEA 自带 JBR 25 执行 `buildPlugin verifyPlugin` 成功，生成 `build/distributions/idea-annotation-1.0.1.zip`。
