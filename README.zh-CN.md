@@ -8,47 +8,58 @@
 
 ![Selection Annotation 图标](src/main/resources/META-INF/pluginIcon.svg)
 
-Selection Annotation 是 IntelliJ IDEA 插件，用于把编辑器选区整理成可直接粘贴到 Codex 等对话中的 Markdown 批注：自动携带本地绝对路径、准确行号、所选原文和可选评论。
+Selection Annotation 是 IntelliJ IDEA 插件，用于把一个或多个编辑器选区整理成可直接粘贴到 Codex 等对话中的紧凑 Markdown 批注：自动携带本地来源链接、准确行号、去除整体缩进的所选文本和共享评论。
 
 ![Selection Annotation 批注输入框](docs/images/selection-annotation.png)
+
+![Selection Annotation 在 Codex 中的输出效果](docs/images/selection-annotation-output.png)
 
 ## 功能
 
 - 从 IDEA 原生浮动代码工具栏或编辑器右键菜单打开“批注…”。
-- 在选区下方显示固定宽度的多行批注输入框，评论允许为空。
+- 支持一次批注多个光标选区，并填写一条共享多行评论。
+- macOS 使用 **Option+C**、Windows/Linux 使用 **Alt+C** 直接复制选中上下文。
+- 复制当前文件或 Project View 中单选、多选文件和目录的 Markdown 链接。
+- 从编辑器或 Project View 右键菜单使用 **复制路径**。
+- 可设置由 Enter 或 Shift+Enter 确认批注，另一个按键用于换行。
 - 使用当前编辑器缓冲区内容，支持未保存文件和具有真实本地路径的 Scratch 文件。
 - 自动计算 1-based 单行或多行范围，选区末尾换行不会误计下一行。
+- 删除选区首部空白行和公共缩进，同时保留相对缩进。
 - 复制成功后保留原选区；复制失败时保留已输入评论以便重试。
 - 用户界面提供英文和简体中文资源。
 
 ## 使用方式
 
-1. 在本地文本文件中选中一段文字。
+1. 在本地文本文件中选中一段或多段文字。
 2. 点击浮动代码工具栏中的 **批注…**，或从编辑器右键菜单选择 **批注…**。
-3. 输入可选评论，点击 **复制**。
+3. 按需输入评论，点击 **确认**，或使用当前设置的确认键。
 4. 将剪贴板内容粘贴到目标对话。
+
+使用 **Option+C**/**Alt+C** 可跳过输入框直接复制选中上下文。编辑器无选区时复制当前文件链接；Project View 中则复制所选文件或目录链接。
 
 示例输出：
 
-```markdown
-> **Source:**
-> /project/src/Example.java:42-45
->
-> **Selected text:**
-> first line
->     second line
->
-> **User comment:**
-> 请检查这里的边界条件
->
-```
+````markdown
+> [Example.java (lines 42-45)](/project/src/Example.java)
+> ```java
+> if (value == null) {
+>     return Optional.empty();
+> }
+> ```
+_User comment:_
+
+请检查这里的边界条件。
+
+---
+
+````
 
 ## 兼容范围
 
 - IntelliJ IDEA 2026.2 及以上，最低平台构建为 `262`。
 - Java/JBR 25。
 - 普通本地文本文件和具有真实本地路径的 Scratch 文件。
-- 不支持 Diff 编辑器、无稳定本地路径的临时文件和多个非空选区。
+- 不支持 Diff 编辑器和无稳定本地路径的临时文件。
 
 ## 安装
 
@@ -86,4 +97,4 @@ export PATH="$JAVA_HOME/bin:$PATH"
 
 ## 数据边界
 
-插件只读取当前选区与本地文件路径，并把生成的批注写入系统剪贴板；不发送网络请求，不收集遥测，也不持久化批注历史。绝对路径会出现在剪贴板内容中，粘贴到外部服务前请确认目标和内容。
+插件只读取当前选区或焦点上下文中的本地文件路径，并把生成的批注或链接写入系统剪贴板；不发送网络请求，不收集遥测，也不持久化批注历史。绝对路径会出现在剪贴板内容中，粘贴到外部服务前请确认目标和内容。

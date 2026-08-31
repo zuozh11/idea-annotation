@@ -8,47 +8,58 @@
 
 ![Selection Annotation icon](src/main/resources/META-INF/pluginIcon.svg)
 
-Selection Annotation is an IntelliJ IDEA plugin that turns an editor selection into a Markdown annotation ready to paste into Codex or another conversation. It automatically includes the local absolute path, accurate line numbers, the selected text, and an optional comment.
+Selection Annotation is an IntelliJ IDEA plugin that turns one or more editor selections into a compact Markdown annotation ready to paste into Codex or another conversation. It automatically includes local source links, accurate line ranges, de-indented selected text, and a shared comment.
 
 ![Selection Annotation input](docs/images/selection-annotation.png)
+
+![Selection Annotation output in Codex](docs/images/selection-annotation-output.png)
 
 ## Features
 
 - Open **Annotate…** from the native IDEA floating code toolbar or the editor context menu.
-- Enter an optional multiline comment in a fixed-width input beneath the selection.
+- Annotate multiple carets at once with one shared multiline comment.
+- Copy selected context directly with **Option+C** on macOS or **Alt+C** on Windows/Linux.
+- Copy Markdown links for the current file or Project View files and directories, including multi-selection.
+- Use **Copy Path** from the editor or Project View context menu.
+- Choose whether Enter or Shift+Enter confirms the annotation; the other key inserts a new line.
 - Use the current editor buffer, including unsaved files and Scratch files with a real local path.
 - Calculate 1-based single-line or multiline ranges without counting an unselected next line after a trailing newline.
+- Remove leading blank lines and common indentation while preserving relative indentation.
 - Keep the original selection after a successful copy and preserve the entered comment when clipboard writing fails.
 - Follow the IDE language with English and Simplified Chinese user-interface text.
 
 ## Usage
 
-1. Select text in a local text file.
+1. Select one or more text ranges in a local text file.
 2. Click **Annotate…** in the floating code toolbar, or choose **Annotate…** from the editor context menu.
-3. Enter an optional comment and click **Copy**.
+3. Enter a comment if needed and click **Confirm**, or use the configured confirmation key.
 4. Paste the clipboard content into the target conversation.
+
+Use **Option+C**/**Alt+C** to copy selected context without opening the input. With no editor selection, it copies the current file link; in Project View, it copies links for the selected files or directories.
 
 Example output:
 
-```markdown
-> **Source:**
-> /project/src/Example.java:42-45
->
-> **Selected text:**
-> first line
->     second line
->
-> **User comment:**
-> Please check the boundary conditions here.
->
-```
+````markdown
+> [Example.java (lines 42-45)](/project/src/Example.java)
+> ```java
+> if (value == null) {
+>     return Optional.empty();
+> }
+> ```
+_User comment:_
+
+Please check the boundary conditions here.
+
+---
+
+````
 
 ## Compatibility
 
 - IntelliJ IDEA 2026.2 or later, with minimum platform build `262`.
 - Java/JBR 25.
 - Regular local text files and Scratch files with a real local path.
-- Diff editors, temporary files without a stable local path, and multiple non-empty selections are not supported.
+- Diff editors and temporary files without a stable local path are not supported.
 
 ## Installation
 
@@ -86,4 +97,4 @@ The installable ZIP is written to `build/distributions/`; build output is not co
 
 ## Data Boundary
 
-The plugin only reads the current selection and local file path, then writes the generated annotation to the system clipboard. It does not send network requests, collect telemetry, or persist annotation history. Absolute paths are included in clipboard content, so verify the destination and content before pasting into an external service.
+The plugin only reads current selections or focused local file paths, then writes the generated annotation or links to the system clipboard. It does not send network requests, collect telemetry, or persist annotation history. Absolute paths are included in clipboard content, so verify the destination and content before pasting into an external service.
