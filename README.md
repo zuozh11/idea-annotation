@@ -8,6 +8,8 @@
 
 Selection Annotation 是 IntelliJ IDEA 插件，用于把编辑器选区整理成可直接粘贴到 Codex 等对话中的 Markdown 批注：自动携带本地绝对路径、准确行号、所选原文和可选评论。
 
+![Selection Annotation 批注输入框](docs/images/selection-annotation.png)
+
 ## 功能
 
 - 从 IDEA 原生浮动代码工具栏或编辑器右键菜单打开“批注…”。
