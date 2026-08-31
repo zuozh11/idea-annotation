@@ -17,6 +17,7 @@
         <editorFactoryListener implementation="com.zuozhi.ideaannotation.AnnotationEditorFactoryListener"/>
         <applicationConfigurable
             id="com.zuozhi.ideaannotation.settings"
+            displayName="Selection Annotation"
             instance="com.zuozhi.ideaannotation.AnnotationSettingsConfigurable"/>
     </extensions>
 
@@ -33,7 +34,8 @@
         </action>
         <action
             id="com.zuozhi.ideaannotation.CopyContextAction"
-            class="com.zuozhi.ideaannotation.CopyContextAction">
+            class="com.zuozhi.ideaannotation.CopyContextAction"
+            icon="AllIcons.Actions.Copy">
             <keyboard-shortcut keymap="$default" first-keystroke="alt C"/>
         </action>
         <action

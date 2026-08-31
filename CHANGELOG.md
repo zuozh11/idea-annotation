@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 - 2026-09-01
+
+- Redesigned the settings page with a concise feature overview and clearer visual grouping.
+- Added current shortcut details and links that open the matching IntelliJ IDEA Keymap entry.
+- Aligned the direct copy action with the native Copy icon.
+
 ## 1.1.0 - 2026-09-01
 
 - Added a compact source-link and fenced-code annotation template with a fixed comment marker and footer.

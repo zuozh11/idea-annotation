@@ -1,7 +1,5 @@
 <ul>
-    <li>Added a compact source-link and fenced-code annotation template with a fixed comment marker and footer.</li>
-    <li>Added multi-caret annotations with one shared comment.</li>
-    <li>Removed leading blank lines and common indentation from selected text while preserving relative indentation.</li>
-    <li>Added direct Option+C/Alt+C copying for selections and focused files or directories.</li>
-    <li>Added Copy Path menus and configurable Enter/Shift+Enter confirmation behavior.</li>
+    <li>Redesigned the settings page with a concise feature overview and clearer visual grouping.</li>
+    <li>Added current shortcut details and links that open the matching IntelliJ IDEA Keymap entry.</li>
+    <li>Aligned the direct copy action with the native Copy icon.</li>
 </ul>
