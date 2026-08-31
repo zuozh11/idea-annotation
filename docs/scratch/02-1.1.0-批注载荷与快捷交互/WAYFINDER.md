@@ -30,6 +30,7 @@
 - [无选区文件或目录链接复制](./wayfinder/13-无选区文件或目录链接复制.md)：编辑器无选区时复制当前文件链接；Project View 支持一个或多个本地文件/目录，单项首尾各一个空格，多项无首尾空格并以单个换行分隔。
 - [文件与编辑器 Copy Path 菜单](./wayfinder/14-文件与编辑器Copy-Path菜单.md)：编辑器和 Project View 右键菜单新增独立 `Copy Path`；编辑器始终复制当前文件链接，Project View 支持混合多选。
 - [Project View 多选路径链接复制](./wayfinder/15-Project-View多选路径链接复制.md)：文件和目录按显示顺序逐行输出，精确格式为 `links.join("\n")`，无首尾空格；任一项无本地路径则整体不可用。
+- [选区整体缩进移除](./wayfinder/16-选区整体缩进移除.md)：每个选区先删除首部空白行，再独立移除所有非空行共有的最长前导空白前缀，保留相对缩进及内部和尾部换行结构。
 
 ## Not yet specified
 

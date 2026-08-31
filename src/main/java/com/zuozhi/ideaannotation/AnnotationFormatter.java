@@ -71,11 +71,60 @@ final class AnnotationFormatter {
     }
 
     private static void appendCodeBlock(StringBuilder payload, String text, String language) {
-        String fence = "`".repeat(Math.max(3, longestBacktickRun(text) + 1));
+        String content = removeCommonIndent(text);
+        String fence = "`".repeat(Math.max(3, longestBacktickRun(content) + 1));
         payload.append("> ").append(fence).append(language).append('\n');
-        Arrays.stream(text.split("\n", -1))
+        Arrays.stream(content.split("\n", -1))
             .forEach(line -> payload.append("> ").append(line).append('\n'));
         payload.append("> ").append(fence).append('\n');
+    }
+
+    private static String removeCommonIndent(String text) {
+        String[] lines = text.split("\n", -1);
+        int firstLine = 0;
+        while (firstLine < lines.length && isBlankLine(lines[firstLine])) {
+            firstLine++;
+        }
+        String commonIndent = null;
+        for (int index = firstLine; index < lines.length; index++) {
+            String line = lines[index];
+            if (isBlankLine(line)) {
+                continue;
+            }
+            int indentEnd = 0;
+            while (indentEnd < line.length()
+                && isIndentCharacter(line.charAt(indentEnd))) {
+                indentEnd++;
+            }
+            String indent = line.substring(0, indentEnd);
+            if (commonIndent == null) {
+                commonIndent = indent;
+            } else {
+                int commonLength = 0;
+                int maximum = Math.min(commonIndent.length(), indent.length());
+                while (commonLength < maximum
+                    && commonIndent.charAt(commonLength) == indent.charAt(commonLength)) {
+                    commonLength++;
+                }
+                commonIndent = commonIndent.substring(0, commonLength);
+            }
+            if (commonIndent.isEmpty()) {
+                break;
+            }
+        }
+
+        int indentLength = commonIndent == null ? 0 : commonIndent.length();
+        return String.join("\n", Arrays.stream(lines, firstLine, lines.length)
+            .map(line -> isBlankLine(line) ? "" : line.substring(indentLength))
+            .toList());
+    }
+
+    private static boolean isBlankLine(String line) {
+        return line.chars().allMatch(character -> isIndentCharacter((char) character));
+    }
+
+    private static boolean isIndentCharacter(char character) {
+        return character == ' ' || character == '\t';
     }
 
     private static int longestBacktickRun(String text) {
