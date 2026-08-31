@@ -9,6 +9,7 @@ This repository contains the single-module Java IntelliJ IDEA plugin **Selection
 - `src/main/resources/messages/` contains the default English bundle and `zh_CN` bundle.
 - `docs/scratch/01-IDEA批注插件/PRD.md` is the behavior baseline. Read it before changing plugin behavior or interaction.
 - `docs/publishing.md` is the release runbook. Read it before changing metadata, compatibility, signing, GitHub Actions, versions, or Marketplace publication.
+- `EULA.md` is the repository copy of the public Developer EULA. Keep both copies synchronized when changing license terms; the public URL is recorded in `docs/publishing.md`.
 
 Keep the action, editor-owned UI service, selection context, and formatter separate only while their current responsibilities remain distinct.
 
@@ -39,9 +40,11 @@ Use the existing short Conventional-style subjects such as `feat: ...` or `fix: 
 
 ## Security & Configuration
 
-The plugin ID is `com.zuozhi.ideaannotation`; do not change it after Marketplace publication. The display name is `Selection Annotation`. Keep `sinceBuild` at `262` and omit `untilBuild` unless the compatibility policy is explicitly changed.
+The plugin ID is `com.zuozhi.ideaannotation`; do not change it after Marketplace publication. The Marketplace numeric ID is `33955`, and the display name is `Selection Annotation`. Keep `sinceBuild` at `262` and omit `untilBuild` unless the compatibility policy is explicitly changed.
 
-Use stable SemVer: `1.0.x` for fixes and `1.1.0` for new backward-compatible functionality. Update `version`, `RELEASE_NOTES.md`, and `CHANGELOG.md` together. A matching stable tag triggers Marketplace upload, so obtain explicit confirmation before pushing a version tag.
+Use stable SemVer: `1.0.x` for fixes and `1.1.0` for new backward-compatible functionality. Update `version`, `RELEASE_NOTES.md`, and `CHANGELOG.md` together. A normal `main` push only builds and verifies. The Marketplace entry already exists, so all versions after `1.0.1` must be released with a matching stable tag; do not use the initial `workflow_dispatch` path for updates. Obtain explicit confirmation before pushing a version tag because it uploads Marketplace and creates the GitHub Release.
+
+Keep README content stable and user-facing. Do not put temporary Marketplace review or moderation status in `README.md`; record exact upload, review, approval, and publication evidence only in `docs/publishing.md`.
 
 Keep Marketplace tokens, certificate chains, private keys, key passwords, signing files, local IDE state, and sandbox data out of the repository. Supply publication credentials only through the documented environment variables or GitHub Actions Secrets. Treat a successful build, GitHub Release, and Marketplace approval as separate evidence states.
 
