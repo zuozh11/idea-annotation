@@ -10,19 +10,17 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <editorFactoryListener implementation="com.zuozhi.ideaannotation.AnnotationEditorFactoryListener"/>
-        <applicationConfigurable
-            parentId="tools"
-            instance="com.zuozhi.ideaannotation.AnnotationSettingsConfigurable"
-            id="com.zuozhi.ideaannotation.settings"
-            displayName="IDEA Annotation"/>
     </extensions>
 
-    <actions>
+    <actions resource-bundle="messages.IdeaAnnotationBundle">
         <action
             id="com.zuozhi.ideaannotation.CopyAnnotationAction"
             class="com.zuozhi.ideaannotation.CopyAnnotationAction"
-            text="批注…"
-            description="复制所选文本及批注">
+            icon="AllIcons.Actions.Edit">
+            <add-to-group
+                group-id="Floating.CodeToolbar"
+                anchor="after"
+                relative-to-action="ReformatCode"/>
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
