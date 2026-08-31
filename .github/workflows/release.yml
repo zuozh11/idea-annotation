@@ -45,6 +45,10 @@ jobs:
             echo "Initial signed packages must be built from main" >&2
             exit 1
           fi
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$VERSION" != "1.0.1" ]]; then
+            echo "Manual initial releases are limited to version 1.0.1" >&2
+            exit 1
+          fi
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check signing secrets
@@ -130,8 +134,39 @@ jobs:
           echo "### Marketplace upload accepted" >> "$GITHUB_STEP_SUMMARY"
           echo "Version ${{ needs.package.outputs.version }} was uploaded successfully. JetBrains review is still required before public availability." >> "$GITHUB_STEP_SUMMARY"
 
-  github-release:
-    name: Create GitHub Release
+  initial-github-release:
+    name: Create initial GitHub Release
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v6
+
+      - name: Download signed package
+        uses: actions/download-artifact@v8
+        with:
+          name: selection-annotation-${{ needs.package.outputs.version }}-signed
+          path: release-assets
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.package.outputs.version }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release upload "$VERSION" release-assets/*-signed.zip --clobber
+          else
+            gh release create "$VERSION" release-assets/*-signed.zip \
+              --target "$GITHUB_SHA" \
+              --title "$VERSION" \
+              --notes-file RELEASE_NOTES.md
+          fi
+
+  github-release-after-publish:
+    name: Create GitHub Release after Marketplace upload
     if: ${{ github.event_name == 'push' }}
     needs: [package, publish]
     runs-on: ubuntu-latest

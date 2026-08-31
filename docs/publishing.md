@@ -5,7 +5,7 @@
 - 插件 ID：`com.zuozhi.ideaannotation`，发布后不可变更。
 - Marketplace 名称：`Selection Annotation`。原名称含 `IDEA`，不符合 Marketplace 对插件名称不得包含 JetBrains 产品名称的审核规则。
 - 当前版本：`1.0.1`；最低兼容构建：`262`；不设置 `until-build`。
-- 首次版本由维护者在 Marketplace 页面创建插件条目并上传签名 ZIP。
+- 首次版本由手工工作流生成签名 ZIP 和 GitHub Release，再由维护者在 Marketplace 页面创建插件条目并上传该 ZIP。
 - Marketplace 条目存在后，后续稳定版本由与 Gradle `version` 完全一致的标签自动发布，例如 `1.0.2`。
 - `1.0.x` 用于缺陷修复；新增向后兼容功能使用 `1.1.0`。
 
@@ -80,8 +80,8 @@ gh secret set PUBLISH_TOKEN
 首次插件条目必须在 Marketplace 页面人工创建；`publishPlugin` 只用于已有条目的后续版本。
 
 1. 将发布配置合入并推送到 `main`，确认 **Build** 工作流成功。
-2. 在 GitHub **Actions → Release → Run workflow** 中选择 `main` 手工运行。
-3. 下载工作流产物 `selection-annotation-1.0.1-signed`，解压后取得 `*-signed.zip`。
+2. 在 GitHub **Actions → Release → Run workflow** 中选择 `main` 手工运行。工作流通过后会自动创建 `1.0.1` 标签和 GitHub Release，并附带签名 ZIP；工作流使用仓库 `GITHUB_TOKEN` 创建标签，不会递归触发标签发布流程。
+3. 从 GitHub Release 或工作流产物 `selection-annotation-1.0.1-signed` 下载 `*-signed.zip`。
 4. 在 Marketplace 选择 **Upload plugin**：
    - 选择 Vendor profile；
    - 上传签名 ZIP；
@@ -89,7 +89,7 @@ gh secret set PUBLISH_TOKEN
    - 选择 Developer EULA；
    - 根据需要设置 Hidden；
    - 提交审核。
-5. 在 Marketplace 后台记录插件页面、版本、上传时间与审核状态。首次人工上传不创建 `1.0.1` 自动发布标签，避免工作流重复上传同一版本。
+5. 在 Marketplace 后台记录插件页面、版本、上传时间与审核状态。`1.0.1` GitHub Release 只证明签名发布物已生成，不证明 Marketplace 已上传或审核通过。
 
 ## 后续自动发布
 
@@ -121,7 +121,8 @@ gh secret set PUBLISH_TOKEN
 | 构建或 Plugin Verifier | 未上传、无 GitHub Release | 查看 `plugin-verifier-report`，修复后发布新提交和标签 |
 | 缺少签名或 Token Secret | 未上传、无 GitHub Release | 补齐或轮换 Secret 后重新运行 |
 | `publishPlugin` 明确失败 | 无 GitHub Release | 按错误修正；如果响应含糊，先查 Marketplace 后台是否已收到该版本，避免重复上传 |
-| Marketplace 上传成功，GitHub Release 失败 | Marketplace 进入审核，GitHub Release 缺失 | 在 Actions 中只重新运行失败的 `github-release` job，不重复执行 Marketplace 上传 |
+| 首次签名成功，GitHub Release 失败 | Marketplace 尚未上传，GitHub Release 缺失 | 只重新运行失败的 `initial-github-release` job |
+| Marketplace 上传成功，GitHub Release 失败 | Marketplace 进入审核，GitHub Release 缺失 | 只重新运行失败的 `github-release-after-publish` job，不重复执行 Marketplace 上传 |
 | JetBrains 审核未通过 | 版本未公开 | 按 Marketplace 反馈处理，并保留后台状态和沟通记录；构建成功不能覆盖审核结论 |
 
 ## 发布证据
@@ -131,17 +132,19 @@ gh secret set PUBLISH_TOKEN
 | 证据 | 证明范围 |
 | --- | --- |
 | Build 工作流 URL 与结论 | 对应提交已构建并通过 Plugin Verifier |
-| Release 工作流 URL 与 `publish` job 结论 | Marketplace 上传请求成功或失败 |
-| GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物 |
+| 首次 Release 工作流 URL 与 `initial-github-release` job 结论 | `1.0.1` 签名 ZIP 和 GitHub Release 已生成或失败 |
+| 后续 Release 工作流 URL 与 `publish`、`github-release-after-publish` job 结论 | Marketplace 上传请求与 GitHub Release 创建成功或失败 |
+| GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
 ### 2026-08-31 当前状态
 
+- 提交 `8ba31ff` 已推送到 `main`；[Build #33384420918](https://github.com/zuozh11/idea-annotation/actions/runs/33384420918) 的构建、ZIP artifact 和 Plugin Verifier report 均成功。
 - GitHub 仓库尚无 Actions Secrets、版本标签或 GitHub Release。
 - Marketplace 公共搜索未发现名称 `Selection Annotation`、旧名称 `IDEA Annotation` 或插件 ID `com.zuozhi.ideaannotation` 的精确公开条目；这不能排除隐藏或待审核条目。
 - 使用 IDEA 自带 JBR 25 执行 `buildPlugin verifyPlugin` 成功，生成 `build/distributions/idea-annotation-1.0.1.zip`。
 - Plugin Verifier 1.410 对官方 `IU-262.8665.337` 的结论为 Compatible；无内部 API 使用，保留 3 条 `ComponentInlay` 实验 API 提示。报告位于 `build/reports/pluginVerifier/IU-262.8665.337/`。
-- 本次仅在本地准备自动发布配置，尚未提交、推送、创建 Release 或上传 Marketplace。
+- Marketplace 尚未上传，JetBrains 审核尚未开始。
 
 ## 官方依据
 

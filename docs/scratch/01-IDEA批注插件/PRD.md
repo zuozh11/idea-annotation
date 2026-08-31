@@ -127,7 +127,8 @@
 - 首次发布由维护者在 JetBrains Marketplace 创建 Vendor 和插件条目，选择许可证、标签、渠道与是否隐藏，并上传 GitHub Actions 生成的签名 ZIP。
 - Marketplace 已存在插件条目后，稳定版本使用与 Gradle `version` 完全一致的 SemVer 标签触发自动发布，例如版本 `1.0.2` 对应标签 `1.0.2`。
 - 标签发布必须依次完成版本一致性检查、`buildPlugin`、`verifyPlugin`、`signPlugin` 和 `publishPlugin`；任一步失败均不得创建 GitHub Release。
-- Marketplace 上传成功后再创建同名 GitHub Release 并附带签名 ZIP。GitHub Release 只证明上传任务成功，不代表 JetBrains 审核通过或版本已公开可安装。
+- 首次手工运行签名包工作流时，自动创建同版本 GitHub Release 并附带签名 ZIP；该 Release 不代表 Marketplace 已上传。后续版本在 Marketplace 上传成功后再创建同名 GitHub Release。
+- GitHub Release 只证明对应签名发布物已生成，不代表 JetBrains 审核通过或版本已公开可安装。
 - 首次版本、缺陷修复版本和新增向后兼容功能分别遵循 `1.0.0`、`1.0.x` 和 `1.1.0` 的版本规则；每次发布同时更新 `version`、`RELEASE_NOTES.md` 和 `CHANGELOG.md`。
 - 新插件和每个更新都以 JetBrains Marketplace 后台显示的审核状态为最终发布证据；审核状态、版本、时间和插件页面链接应记录在发布交接中。
 
