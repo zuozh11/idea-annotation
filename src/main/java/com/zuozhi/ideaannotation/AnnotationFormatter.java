@@ -85,8 +85,12 @@ final class AnnotationFormatter {
         while (firstLine < lines.length && isBlankLine(lines[firstLine])) {
             firstLine++;
         }
+        int lastLine = lines.length;
+        while (lastLine > firstLine && isBlankLine(lines[lastLine - 1])) {
+            lastLine--;
+        }
         String commonIndent = null;
-        for (int index = firstLine; index < lines.length; index++) {
+        for (int index = firstLine; index < lastLine; index++) {
             String line = lines[index];
             if (isBlankLine(line)) {
                 continue;
@@ -114,7 +118,7 @@ final class AnnotationFormatter {
         }
 
         int indentLength = commonIndent == null ? 0 : commonIndent.length();
-        return String.join("\n", Arrays.stream(lines, firstLine, lines.length)
+        return String.join("\n", Arrays.stream(lines, firstLine, lastLine)
             .map(line -> isBlankLine(line) ? "" : line.substring(indentLength))
             .toList());
     }

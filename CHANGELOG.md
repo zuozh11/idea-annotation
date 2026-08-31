@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2 - 2026-09-01
+
+- Removed trailing blank lines from each selected text block.
+
 ## 1.1.1 - 2026-09-01
 
 - Redesigned the settings page with a concise feature overview and clearer visual grouping.
