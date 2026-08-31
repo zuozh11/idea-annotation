@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IDEA 批注交互原型</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #111318;
+      --panel: #1b1e24;
+      --panel-2: #232731;
+      --line: #333946;
+      --text: #e8eaf0;
+      --muted: #979daa;
+      --blue: #4c9aff;
+      --blue-strong: #1677ff;
+      --green: #55c27c;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #0c0e12; color: var(--text); overflow: hidden; }
+    button, textarea { font: inherit; }
+    button { color: inherit; }
+    .prototype-label {
+      position: fixed; top: 14px; left: 18px; z-index: 50;
+      padding: 7px 10px; border: 1px solid #5b4326; border-radius: 8px;
+      background: #2d2418; color: #f1bc72; font-size: 12px; letter-spacing: .08em;
+    }
+    .app { height: 100vh; display: grid; grid-template-rows: 42px 1fr 26px; background: var(--bg); }
+    .titlebar { position: relative; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #2a2d34; color: #bec3cd; font-size: 13px; }
+    .settings-button { position: absolute; right: 10px; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; color: #9da4af; cursor: pointer; }
+    .settings-button:hover { background: #2a2f38; color: #eef1f5; }
+    .workspace { display: grid; grid-template-columns: 236px 1fr; min-height: 0; }
+    .sidebar { border-right: 1px solid #2a2d34; background: #17191e; padding: 14px 10px; }
+    .sidebar-title { color: #c8ccd5; font-size: 13px; margin: 0 0 12px 8px; }
+    .tree { display: grid; gap: 4px; color: #aeb3bd; font-family: "JetBrains Mono", monospace; font-size: 12px; }
+    .tree div { padding: 4px 8px; border-radius: 5px; }
+    .tree .active { background: #293445; color: #d7e8ff; }
+    .editor-shell { min-width: 0; display: grid; grid-template-rows: 36px 1fr; position: relative; }
+    .tabs { display: flex; align-items: end; background: #17191e; border-bottom: 1px solid #292d35; }
+    .tab { height: 34px; padding: 9px 18px; border-right: 1px solid #292d35; background: #20242b; color: #d0d4dc; font-size: 12px; }
+    .editor { position: relative; overflow: hidden; background: #15171c; font: 15px/1.75 "JetBrains Mono", Menlo, monospace; }
+    .code { padding: 32px 76px; counter-reset: line; }
+    .line { display: block; white-space: pre; color: #c9ced8; }
+    .line::before { counter-increment: line; content: counter(line); display: inline-block; width: 34px; margin-right: 20px; text-align: right; color: #5f6570; }
+    .kw { color: #cc8ee7; } .type { color: #67c2b6; } .str { color: #d5b778; } .call { color: #79a9ef; }
+    #selected {
+      position: relative; background: #234b78; color: #edf6ff; border-radius: 2px;
+      outline: 1px solid #3f7fbe; cursor: context-menu;
+    }
+    .hint {
+      position: absolute; left: 78px; top: 12px; color: #8f96a2; font: 12px/1.4 Inter, sans-serif;
+    }
+    .statusbar { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 0 12px; border-top: 1px solid #282c33; color: #858b96; font-size: 11px; }
+    .context-menu {
+      position: fixed; z-index: 20; width: 206px; padding: 6px; border: 1px solid #424955;
+      border-radius: 9px; background: #252932; box-shadow: 0 14px 34px rgba(0,0,0,.48);
+    }
+    .context-menu button { width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; }
+    .context-menu button:hover, .context-menu .primary { background: #2e65a5; }
+    .context-menu .sep { height: 1px; margin: 5px 2px; background: #3b414b; }
+    .overlay { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(5,7,10,.52); }
+    .dialog { width: 520px; border: 1px solid #444b57; border-radius: 13px; background: #242831; box-shadow: 0 22px 65px rgba(0,0,0,.55); }
+    .dialog h2 { margin: 0; padding: 18px 20px 12px; font-size: 17px; }
+    .dialog-body { padding: 0 20px 18px; }
+    .selected-preview { padding: 10px 12px; margin-bottom: 12px; border-radius: 8px; background: #191c22; color: #b7bec9; font: 12px/1.55 "JetBrains Mono", monospace; }
+    textarea { width: 100%; min-height: 116px; resize: vertical; padding: 11px 12px; border: 1px solid #4a515e; border-radius: 8px; outline: 0; background: #181b21; color: #eef1f6; }
+    textarea:focus { border-color: #4c9aff; box-shadow: 0 0 0 2px rgba(76,154,255,.18); }
+    .actions { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid #383e48; }
+    .btn { padding: 8px 16px; border: 1px solid #49505c; border-radius: 8px; background: #2d323c; cursor: pointer; }
+    .btn.primary { border-color: #297ee8; background: #297ee8; color: white; }
+    .selection-pill {
+      position: fixed; z-index: 18; padding: 3px 7px; border: 1px solid #4b5360; border-radius: 999px;
+      background: #22262e; box-shadow: 0 5px 16px rgba(0,0,0,.32); color: #c7cdd6; cursor: pointer; font-size: 11px;
+    }
+    .floating-editor {
+      position: fixed; z-index: 19; width: 430px; padding: 14px; border: 1px solid #444b57;
+      border-radius: 18px; background: #252932; box-shadow: 0 18px 48px rgba(0,0,0,.52);
+    }
+    .floating-editor textarea { min-height: 96px; border: 0; background: transparent; padding: 4px; }
+    .floating-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+    .floating-footer span { color: #8e96a3; font-size: 12px; }
+    .inline-error { min-height: 18px; margin-top: 6px; color: #ff817a; font-size: 12px; }
+    .settings-dialog { width: 650px; min-height: 360px; border: 1px solid #444b57; border-radius: 13px; background: #242831; box-shadow: 0 22px 65px rgba(0,0,0,.55); overflow: hidden; }
+    .settings-dialog h2 { margin: 0; padding: 16px 18px; border-bottom: 1px solid #383e48; font-size: 16px; }
+    .settings-layout { display: grid; grid-template-columns: 190px 1fr; min-height: 250px; }
+    .settings-nav { padding: 14px 10px; border-right: 1px solid #383e48; background: #1d2027; color: #aab1bc; font-size: 13px; }
+    .settings-nav div { padding: 7px 10px; border-radius: 6px; }
+    .settings-nav .active { background: #2d5786; color: white; }
+    .settings-content { padding: 22px; }
+    .settings-content h3 { margin: 0 0 18px; font-size: 15px; }
+    .setting-row { display: flex; align-items: center; gap: 10px; }
+    .setting-row input { width: 16px; height: 16px; }
+    .setting-help { margin: 8px 0 0 26px; color: #8d95a2; font-size: 12px; }
+    .editor-toolbar {
+      position: absolute; top: 6px; right: 12px; z-index: 10; display: flex; gap: 6px;
+    }
+    .toolbar-button { padding: 7px 11px; border: 1px solid #414752; border-radius: 7px; background: #242830; cursor: pointer; font-size: 12px; }
+    .side-panel {
+      position: absolute; z-index: 16; top: 0; right: 0; bottom: 0; width: 390px; border-left: 1px solid #454c58;
+      background: #20242b; box-shadow: -18px 0 42px rgba(0,0,0,.35); padding: 18px;
+    }
+    .side-panel h2 { margin: 0 0 18px; font-size: 16px; }
+    .side-panel textarea { min-height: 210px; }
+    .side-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .toast {
+      position: fixed; right: 24px; bottom: 72px; z-index: 40; padding: 12px 16px; border: 1px solid #3c7552;
+      border-radius: 10px; background: #203c2b; color: #bdf2ce; box-shadow: 0 12px 32px rgba(0,0,0,.42);
+    }
+    .state-panel {
+      position: fixed; left: 18px; bottom: 54px; z-index: 45; width: 330px; border: 1px solid #373e49;
+      border-radius: 10px; background: rgba(25,28,34,.95); box-shadow: 0 10px 28px rgba(0,0,0,.3); overflow: hidden;
+    }
+    .state-panel summary { padding: 9px 12px; cursor: pointer; color: #aeb5c0; font-size: 12px; }
+    .state-content { padding: 0 12px 12px; display: grid; gap: 5px; font: 11px/1.45 "JetBrains Mono", monospace; color: #8f98a6; }
+    .switcher {
+      position: fixed; left: 50%; bottom: 16px; z-index: 60; transform: translateX(-50%);
+      display: grid; grid-template-columns: 42px minmax(190px, auto) 42px; align-items: center;
+      border: 1px solid #576171; border-radius: 999px; background: #f1f4f8; color: #16191e; box-shadow: 0 15px 40px rgba(0,0,0,.5); overflow: hidden;
+    }
+    .switcher button { height: 38px; border: 0; background: transparent; color: #16191e; cursor: pointer; font-size: 18px; }
+    .switcher button:hover { background: #dce3ec; }
+    .switcher-label { padding: 0 12px; text-align: center; font-size: 12px; font-weight: 650; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <!-- THROWAWAY PROTOTYPE: Three annotation interaction variants, switchable via ?variant=A|B|C. -->
+  <div class="prototype-label">THROWAWAY PROTOTYPE · 交互决策用</div>
+  <main class="app">
+    <header class="titlebar">idea-annotation — IntelliJ IDEA <button class="settings-button" id="settingsButton" title="插件设置">⚙</button></header>
+    <section class="workspace">
+      <aside class="sidebar">
+        <p class="sidebar-title">Project</p>
+        <div class="tree">
+          <div>⌄ idea-annotation</div>
+          <div>　⌄ src</div>
+          <div>　　⌄ main</div>
+          <div>　　　⌄ java</div>
+          <div class="active">　　　　CopyAnnotationAction.java</div>
+          <div>　　　⌄ resources</div>
+          <div>　　　　plugin.xml</div>
+          <div>　 build.gradle.kts</div>
+        </div>
+      </aside>
+      <section class="editor-shell">
+        <div class="tabs"><div class="tab">CopyAnnotationAction.java</div></div>
+        <div class="editor" id="editor">
+          <div class="hint" id="hint"></div>
+          <div class="editor-toolbar hidden" id="editorToolbar">
+            <button class="toolbar-button" id="toolbarAnnotate">💬 添加批注　⌥A</button>
+          </div>
+          <div class="code">
+            <span class="line"><span class="kw">public final class</span> <span class="type">CopyAnnotationAction</span> <span class="kw">extends</span> AnAction {</span>
+            <span class="line">    <span class="kw">private static final</span> String SOURCE =</span>
+            <span class="line">        <span class="str">"/Users/zuozhi/workspace/zuozhi/idea-annotation"</span>;</span>
+            <span class="line"></span>
+            <span class="line">    <span class="kw">public void</span> <span class="call">actionPerformed</span>(AnActionEvent event) {</span>
+            <span class="line">        String selectedText = <span id="selected">editor.getSelectionModel().getSelectedText()</span>;</span>
+            <span class="line">        String comment = dialog.<span class="call">getComment</span>();</span>
+            <span class="line">        clipboard.<span class="call">copy</span>(source, selectedText, comment);</span>
+            <span class="line">    }</span>
+            <span class="line">}</span>
+          </div>
+          <div id="variantLayer"></div>
+        </div>
+      </section>
+    </section>
+    <footer class="statusbar"><span>UTF-8</span><span>LF</span><span>Java 25</span><span>main</span></footer>
+  </main>
+
+  <details class="state-panel" open>
+    <summary>原型状态（用于观察交互，不属于最终 UI）</summary>
+    <div class="state-content">
+      <div>variant: <span id="stateVariant"></span></div>
+      <div>state: <span id="stateName">selection-ready</span></div>
+      <div>selected: editor.getSelectionModel().getSelectedText()</div>
+      <div>comment: <span id="stateComment">empty</span></div>
+      <div>clipboard: <span id="stateClipboard">not-written</span></div>
+      <div>capsule: <span id="stateCapsule">enabled</span></div>
+    </div>
+  </details>
+
+  <nav class="switcher" aria-label="原型变体切换">
+    <button id="previous" aria-label="上一个变体">←</button>
+    <div class="switcher-label" id="switcherLabel"></div>
+    <button id="next" aria-label="下一个变体">→</button>
+  </nav>
+
+  <script>
+    const variants = [
+      { key: 'A', name: '右键菜单 + 标准对话框' },
+      { key: 'B', name: '右上角小胶囊 + 右键菜单' },
+      { key: 'C', name: '编辑器动作 + 右侧面板' }
+    ];
+    const selectedText = 'editor.getSelectionModel().getSelectedText()';
+    const source = '/Users/zuozhi/workspace/zuozhi/idea-annotation/src/main/java/com/zuozhi/ideaannotation/CopyAnnotationAction.java:6';
+    const layer = document.getElementById('variantLayer');
+    const selected = document.getElementById('selected');
+    const hint = document.getElementById('hint');
+    const toolbar = document.getElementById('editorToolbar');
+    const toolbarAnnotate = document.getElementById('toolbarAnnotate');
+    const stateName = document.getElementById('stateName');
+    const stateComment = document.getElementById('stateComment');
+    const stateClipboard = document.getElementById('stateClipboard');
+    const stateCapsule = document.getElementById('stateCapsule');
+    let capsuleEnabled = true;
+    let capsuleSuppressed = false;
+    let current = new URLSearchParams(location.search).get('variant')?.toUpperCase() || 'A';
+    if (!variants.some(v => v.key === current)) current = 'A';
+
+    function setState(name, comment = '') {
+      stateName.textContent = name;
+      stateComment.textContent = comment || 'empty';
+    }
+
+    function payload(comment) {
+      return `> **Source:**\n> ${source}\n>\n> **Selected text:**\n> ${selectedText}\n>\n> **User comment:**\n> ${comment}\n>\n`;
+    }
+
+    async function copy(comment, onSuccess, onFailure) {
+      try {
+        await navigator.clipboard.writeText(payload(comment));
+        stateClipboard.textContent = 'written';
+        setState('copy-complete', comment);
+        showToast('批注载荷已复制到剪贴板');
+        onSuccess?.();
+      } catch {
+        stateClipboard.textContent = 'browser-denied';
+        setState('copy-failed', comment);
+        onFailure?.();
+      }
+    }
+
+    function showToast(text) {
+      document.querySelector('.toast')?.remove();
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = text;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2200);
+    }
+
+    function textareaCard(onSave, onCancel, className, title) {
+      const root = document.createElement('div');
+      root.className = className;
+      root.innerHTML = `
+        ${title ? `<h2>${title}</h2>` : ''}
+        <div class="dialog-body">
+          <div class="selected-preview">所选文本：<br>${selectedText}</div>
+          <textarea aria-label="批注内容" placeholder="输入批注内容"></textarea>
+          <div class="inline-error"></div>
+        </div>
+        <div class="actions">
+          <button class="btn cancel">取消</button>
+          <button class="btn primary save">复制批注</button>
+        </div>`;
+      const field = root.querySelector('textarea');
+      field.addEventListener('input', () => setState('comment-editing', field.value));
+      root.querySelector('.cancel').addEventListener('click', () => onCancel(root));
+      root.querySelector('.save').addEventListener('click', () => onSave(field.value, root));
+      setTimeout(() => field.focus(), 0);
+      return root;
+    }
+
+    function openStandardDialog() {
+      layer.innerHTML = '';
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      const dialog = textareaCard(
+        (comment) => copy(
+          comment,
+          () => overlay.remove(),
+          () => { dialog.querySelector('.inline-error').textContent = '复制失败，请重试'; }
+        ),
+        () => { overlay.remove(); setState('selection-ready'); },
+        'dialog', '添加批注'
+      );
+      overlay.appendChild(dialog);
+      layer.appendChild(overlay);
+      setState('comment-dialog-open');
+    }
+
+    function bindContextMenu(openEditor) {
+      selected.oncontextmenu = (event) => {
+        event.preventDefault();
+        layer.innerHTML = '';
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        menu.style.left = `${event.clientX}px`;
+        menu.style.top = `${event.clientY}px`;
+        menu.innerHTML = '<button>复制</button><div class="sep"></div><button class="primary">💬 批注…</button><button>查找用法</button>';
+        menu.querySelector('.primary').addEventListener('click', () => {
+          openEditor();
+        });
+        layer.appendChild(menu);
+        setState('context-menu-open');
+      };
+    }
+
+    function renderA() {
+      hint.textContent = '在蓝色选区上点击右键，选择“批注”。';
+      bindContextMenu(openStandardDialog);
+    }
+
+    function placeCapsuleAtSelectionTopRight(element) {
+      const rect = selected.getBoundingClientRect();
+      const width = element.offsetWidth;
+      const height = element.offsetHeight;
+      let left = rect.right + 6;
+      if (left + width > window.innerWidth - 12) left = Math.max(12, rect.right - width);
+      element.style.left = `${left}px`;
+      element.style.top = `${Math.max(12, rect.top - height - 4)}px`;
+    }
+
+    function placeEditorNearSelectionTopRight(element) {
+      const rect = selected.getBoundingClientRect();
+      const width = element.offsetWidth;
+      const height = element.offsetHeight;
+      let left = rect.right + 8;
+      if (left + width > window.innerWidth - 12) left = Math.max(12, rect.left - width - 8);
+      const top = Math.max(12, Math.min(rect.top, window.innerHeight - height - 44));
+      element.style.left = `${left}px`;
+      element.style.top = `${top}px`;
+    }
+
+    function openFloatingEditor() {
+      layer.innerHTML = '';
+      const popup = document.createElement('div');
+      popup.className = 'floating-editor';
+      popup.innerHTML = `
+        <textarea aria-label="批注内容" placeholder="输入批注内容"></textarea>
+        <div class="inline-error"></div>
+        <div class="floating-footer">
+          <span>Esc 取消</span>
+          <div><button class="btn cancel">取消</button> <button class="btn primary save">复制</button></div>
+        </div>`;
+      const field = popup.querySelector('textarea');
+      const error = popup.querySelector('.inline-error');
+      field.addEventListener('input', () => { error.textContent = ''; setState('comment-editing', field.value); });
+      popup.querySelector('.cancel').addEventListener('click', () => { popup.remove(); renderB(); });
+      popup.querySelector('.save').addEventListener('click', () => copy(
+        field.value,
+        () => { popup.remove(); capsuleSuppressed = true; renderB(); },
+        () => { error.textContent = '复制失败，请重试'; }
+      ));
+      layer.appendChild(popup);
+      placeEditorNearSelectionTopRight(popup);
+      field.focus();
+      setState('anchored-comment-open');
+    }
+
+    function renderB() {
+      stateCapsule.textContent = capsuleEnabled ? (capsuleSuppressed ? 'suppressed-for-selection' : 'enabled') : 'disabled';
+      hint.textContent = capsuleEnabled
+        ? '选区右上角小胶囊与右键菜单都可发起批注。点击选区模拟重新选择。'
+        : '胶囊已关闭；仍可在选区右键菜单中发起批注。';
+      bindContextMenu(openFloatingEditor);
+      if (!capsuleEnabled || capsuleSuppressed) return;
+      const pill = document.createElement('button');
+      pill.className = 'selection-pill';
+      pill.textContent = '💬 批注';
+      pill.addEventListener('click', openFloatingEditor);
+      layer.appendChild(pill);
+      placeCapsuleAtSelectionTopRight(pill);
+    }
+
+    function renderC() {
+      hint.textContent = '点击编辑器右上角“添加批注”，保持代码上下文可见。';
+      toolbar.classList.remove('hidden');
+      toolbarAnnotate.onclick = () => {
+        layer.innerHTML = '';
+        const panel = document.createElement('aside');
+        panel.className = 'side-panel';
+        panel.innerHTML = `
+          <h2>添加批注</h2>
+          <div class="selected-preview">所选文本：<br>${selectedText}</div>
+          <textarea aria-label="批注内容" placeholder="输入批注内容"></textarea>
+          <div class="side-actions"><button class="btn cancel">取消</button><button class="btn primary save">复制批注</button></div>`;
+        const field = panel.querySelector('textarea');
+        field.addEventListener('input', () => setState('comment-editing', field.value));
+        panel.querySelector('.cancel').addEventListener('click', () => { panel.remove(); setState('selection-ready'); });
+        panel.querySelector('.save').addEventListener('click', () => { const value = field.value; panel.remove(); copy(value); });
+        layer.appendChild(panel);
+        field.focus();
+        setState('side-panel-open');
+      };
+    }
+
+    function render() {
+      layer.innerHTML = '';
+      toolbar.classList.add('hidden');
+      selected.oncontextmenu = null;
+      stateClipboard.textContent = 'not-written';
+      stateCapsule.textContent = capsuleEnabled ? (capsuleSuppressed ? 'suppressed-for-selection' : 'enabled') : 'disabled';
+      setState('selection-ready');
+      const meta = variants.find(v => v.key === current);
+      document.getElementById('stateVariant').textContent = `${meta.key} · ${meta.name}`;
+      document.getElementById('switcherLabel').textContent = `${meta.key} · ${meta.name}`;
+      if (current === 'A') renderA();
+      if (current === 'B') renderB();
+      if (current === 'C') renderC();
+    }
+
+    function switchVariant(delta) {
+      const index = variants.findIndex(v => v.key === current);
+      current = variants[(index + delta + variants.length) % variants.length].key;
+      capsuleSuppressed = false;
+      const url = new URL(location.href);
+      url.searchParams.set('variant', current);
+      history.replaceState({}, '', url);
+      render();
+    }
+
+    function openSettings() {
+      document.getElementById('settingsOverlay')?.remove();
+      const overlay = document.createElement('div');
+      overlay.id = 'settingsOverlay';
+      overlay.className = 'overlay';
+      overlay.innerHTML = `
+        <section class="settings-dialog">
+          <h2>设置</h2>
+          <div class="settings-layout">
+            <nav class="settings-nav"><div>外观与行为</div><div>编辑器</div><div class="active">工具　›　IDEA Annotation</div></nav>
+            <div class="settings-content">
+              <h3>IDEA Annotation</h3>
+              <label class="setting-row"><input type="checkbox" id="capsuleToggle">显示选区批注胶囊</label>
+              <p class="setting-help">关闭后仍可通过编辑器右键菜单使用“批注…”。</p>
+            </div>
+          </div>
+          <div class="actions"><button class="btn primary close-settings">确定</button></div>
+        </section>`;
+      const toggle = overlay.querySelector('#capsuleToggle');
+      toggle.checked = capsuleEnabled;
+      toggle.addEventListener('change', () => {
+        capsuleEnabled = toggle.checked;
+        stateCapsule.textContent = capsuleEnabled ? 'enabled' : 'disabled';
+        if (current === 'B') { layer.innerHTML = ''; renderB(); }
+      });
+      overlay.querySelector('.close-settings').addEventListener('click', () => overlay.remove());
+      document.body.appendChild(overlay);
+    }
+
+    document.getElementById('previous').addEventListener('click', () => switchVariant(-1));
+    document.getElementById('next').addEventListener('click', () => switchVariant(1));
+    document.getElementById('settingsButton').addEventListener('click', openSettings);
+    selected.addEventListener('click', () => {
+      if (current === 'B' && capsuleSuppressed) {
+        capsuleSuppressed = false;
+        layer.innerHTML = '';
+        stateCapsule.textContent = capsuleEnabled ? 'enabled' : 'disabled';
+        renderB();
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (event.key === 'ArrowLeft') switchVariant(-1);
+      if (event.key === 'ArrowRight') switchVariant(1);
+    });
+    document.addEventListener('click', (event) => {
+      if ((current === 'A' || current === 'B') && !event.target.closest('.context-menu') && event.target !== selected) {
+        document.querySelector('.context-menu')?.remove();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

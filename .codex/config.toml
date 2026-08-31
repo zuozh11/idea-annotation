@@ -1,0 +1,6 @@
+[marketplaces.agent-skill-engineering]
+source_type = "git"
+source = "https://github.com/zuozh11/agent-skill-engineering.git"
+
+[plugins."agent-skill-engineering@agent-skill-engineering"]
+enabled = true

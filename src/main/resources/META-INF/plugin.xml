@@ -1,0 +1,29 @@
+<idea-plugin>
+    <id>com.zuozhi.ideaannotation</id>
+    <name>IDEA Annotation</name>
+    <vendor>zuozhi</vendor>
+    <description><![CDATA[
+        Select local text, add an optional comment, and copy a source-aware Markdown annotation.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <editorFactoryListener implementation="com.zuozhi.ideaannotation.AnnotationEditorFactoryListener"/>
+        <applicationConfigurable
+            parentId="tools"
+            instance="com.zuozhi.ideaannotation.AnnotationSettingsConfigurable"
+            id="com.zuozhi.ideaannotation.settings"
+            displayName="IDEA Annotation"/>
+    </extensions>
+
+    <actions>
+        <action
+            id="com.zuozhi.ideaannotation.CopyAnnotationAction"
+            class="com.zuozhi.ideaannotation.CopyAnnotationAction"
+            text="批注…"
+            description="复制所选文本及批注">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
