@@ -7,6 +7,7 @@
 - 当前版本：`1.1.2`；最低兼容构建：`262`；不设置 `until-build`。
 - 首次版本由手工工作流生成签名 ZIP 和 GitHub Release，再由维护者在 Marketplace 页面创建插件条目并上传该 ZIP。
 - Marketplace 条目存在后，后续稳定版本由与 Gradle `version` 完全一致的标签自动发布，例如 `1.0.2`。
+- 普通 `main` 推送不运行 CI；Pull Request 执行构建与 Plugin Verifier，稳定标签执行发布所需的完整权威校验，避免同一提交在发布前后重复等待两次。
 - `1.0.x` 用于缺陷修复；新增向后兼容功能使用 `1.1.0`。
 
 > GitHub Actions 构建、签名和 `publishPlugin` 成功只证明 Marketplace 接受了上传。JetBrains 仍会审核新插件和每个更新，Marketplace 后台状态才是是否已公开上架的最终证据。
@@ -79,7 +80,7 @@ gh secret set PUBLISH_TOKEN
 
 首次插件条目必须在 Marketplace 页面人工创建；`publishPlugin` 只用于已有条目的后续版本。
 
-1. 将发布配置合入并推送到 `main`，确认 **Build** 工作流成功。
+1. 通过 Pull Request 的 **Build** 工作流验证发布配置后合入 `main`；直接推送 `main` 不运行 CI。
 2. 在 GitHub **Actions → Release → Run workflow** 中选择 `main` 手工运行。工作流通过后会自动创建 `1.0.1` 标签和 GitHub Release，并附带签名 ZIP；工作流使用仓库 `GITHUB_TOKEN` 创建标签，不会递归触发标签发布流程。
 3. 从 GitHub Release 或工作流产物 `selection-annotation-1.0.1-signed` 下载 `*-signed.zip`。
 4. 在 Marketplace 选择 **Upload plugin**：
@@ -97,8 +98,8 @@ gh secret set PUBLISH_TOKEN
 
 1. 在 `build.gradle.kts` 更新 `version = "1.0.2"`。
 2. 把当前版本说明写入 `RELEASE_NOTES.md`，并把同一版本追加到 `CHANGELOG.md`。
-3. 合入并推送 `main`，等待 **Build** 工作流成功。
-4. 经人工确认后，在 `main` 当前提交创建并推送同版本标签：
+3. 合入并推送 `main`；普通 `main` 推送不触发 Build 工作流，无需等待。
+4. 经人工确认后，立即在同一提交创建并推送同版本标签：
 
    ```bash
    git tag 1.0.2
@@ -131,7 +132,8 @@ gh secret set PUBLISH_TOKEN
 
 | 证据 | 证明范围 |
 | --- | --- |
-| Build 工作流 URL 与结论 | 对应提交已构建并通过 Plugin Verifier |
+| Pull Request Build 工作流 URL 与结论（如有） | 合入前的对应提交已构建并通过 Plugin Verifier；直接推送 `main` 时没有此证据 |
+| Release 工作流 `package` job 结论 | 标签提交已完成权威构建、Plugin Verifier 和签名 |
 | 首次 Release 工作流 URL 与 `initial-github-release` job 结论 | `1.0.1` 签名 ZIP 和 GitHub Release 已生成或失败 |
 | 后续 Release 工作流 URL 与 `publish`、`github-release-after-publish` job 结论 | Marketplace 上传请求与 GitHub Release 创建成功或失败 |
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
