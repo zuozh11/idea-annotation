@@ -21,7 +21,6 @@ Use the committed Gradle wrapper with Java/JBR 25. The target platform is Intell
 ./gradlew buildPlugin   # Compile and package the installable plugin ZIP
 ./gradlew runIde        # Launch a sandbox IntelliJ IDEA with the plugin enabled
 ./gradlew test          # Run tests when the requested change needs them
-./gradlew verifyPlugin  # Run Plugin Verifier for release changes
 ```
 
 Use `IDEA_HOME=/Applications/IntelliJ IDEA.app/Contents` when a local IDEA installation must replace the downloaded target platform. Build output belongs under `build/` and stays out of Git.
@@ -32,7 +31,7 @@ Use four-space indentation and UTF-8 files. Follow Java naming: `UpperCamelCase`
 
 ## Testing Guidelines
 
-Use JUnit through the IntelliJ Platform test framework when tests are required. Name tests `*Test` and mirror production package paths under `src/test`. Prefer coverage of multiline selections, comments, absolute source paths, line-boundary behavior, and exact clipboard text. Run only the smallest check needed for the requested result. Pull requests run `buildPlugin` and `verifyPlugin`; stable release tags run them again as part of the authoritative signed release. Do not duplicate those checks locally unless the user explicitly requests them.
+Use JUnit through the IntelliJ Platform test framework when tests are required. Name tests `*Test` and mirror production package paths under `src/test`. Prefer coverage of multiline selections, comments, absolute source paths, line-boundary behavior, and exact clipboard text. Run only the smallest check needed for the requested result. Pull requests and stable release tags skip tests and Plugin Verifier. Pull requests build the plugin; stable tags build, sign, publish, and create the GitHub Release. Do not duplicate CI checks locally unless the user explicitly requests them.
 
 For ordinary plugin behavior or UI changes, validation consists only of starting or restarting the IDEA sandbox with the current repository open, using `JAVA_HOME="/Applications/IntelliJ IDEA.app/Contents/jbr/Contents/Home" ./gradlew runIde --args="$PWD"`, and handing it to the user for manual acceptance. Before handoff, confirm that the current repository is visibly open in the sandbox. Do not additionally run automated tests, formatter/string probes, hashes, `buildPlugin`, or Plugin Verifier unless the user explicitly requests them or the change is being prepared for Marketplace publication. A successfully started sandbox with the repository open proves only that the plugin loaded in the intended project context; only the user's confirmation proves manual acceptance.
 
@@ -46,7 +45,7 @@ Normal `main` pushes do not run CI, so `[skip ci]` is unnecessary for direct doc
 
 The plugin ID is `com.zuozhi.ideaannotation`; do not change it after Marketplace publication. The Marketplace numeric ID is `33955`, and the display name is `Selection Annotation`. Keep `sinceBuild` at `262` and omit `untilBuild` unless the compatibility policy is explicitly changed.
 
-Use stable SemVer: `1.0.x` for fixes and `1.1.0` for new backward-compatible functionality. Update `version`, `RELEASE_NOTES.md`, and `CHANGELOG.md` together. A normal `main` push does not run CI; pull requests build and verify, while a matching stable tag performs the complete authoritative build, Plugin Verifier check, signing, Marketplace upload, and GitHub Release creation. The Marketplace entry already exists, so all versions after `1.0.1` must be released with a matching stable tag; do not use the initial `workflow_dispatch` path for updates. Obtain explicit confirmation before pushing a version tag because it uploads Marketplace and creates the GitHub Release.
+Use stable SemVer: `1.0.x` for fixes and `1.1.0` for new backward-compatible functionality. Update `version`, `RELEASE_NOTES.md`, and `CHANGELOG.md` together. A normal `main` push does not run CI; pull requests only build, while a matching stable tag skips tests and Plugin Verifier and performs the signed build, Marketplace upload, and GitHub Release creation. The Marketplace entry already exists, so all versions after `1.0.1` must be released with a matching stable tag; do not use the initial Release `workflow_dispatch` path for updates. The Build workflow's manual dispatch on `main` is reserved for rebuilding the shared Gradle cache and never publishes. Obtain explicit confirmation before pushing a version tag because it uploads Marketplace and creates the GitHub Release.
 
 Keep README content stable and user-facing. Do not put temporary Marketplace review or moderation status in `README.md`; record exact upload, review, approval, and publication evidence only in `docs/publishing.md`.
 

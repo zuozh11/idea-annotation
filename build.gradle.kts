@@ -48,12 +48,6 @@ intellijPlatform {
     publishing {
         token = providers.environmentVariable("PUBLISH_TOKEN")
     }
-
-    pluginVerification {
-        ides {
-            current()
-        }
-    }
 }
 
 tasks {

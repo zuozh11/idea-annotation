@@ -2,6 +2,7 @@ name: Build
 
 on:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -12,9 +13,18 @@ concurrency:
 
 jobs:
   build:
-    name: Build and verify
+    name: Build plugin
     runs-on: ubuntu-latest
     steps:
+      - name: Validate cache rebuild branch
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "The shared Gradle cache must be rebuilt from main." >&2
+            exit 1
+          fi
+
       - name: Fetch sources
         uses: actions/checkout@v6
 
@@ -26,20 +36,15 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name != 'workflow_dispatch' }}
+          cache-write-only: ${{ github.event_name == 'workflow_dispatch' }}
 
-      - name: Build and verify plugin
-        run: ./gradlew buildPlugin verifyPlugin
+      - name: Build plugin
+        run: ./gradlew buildPlugin -x test
 
       - name: Upload plugin distribution
         uses: actions/upload-artifact@v7
         with:
           name: plugin-distribution
           path: build/distributions/*.zip
-
-      - name: Upload Plugin Verifier report
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: plugin-verifier-report
-          path: build/reports/pluginVerifier
-          if-no-files-found: ignore

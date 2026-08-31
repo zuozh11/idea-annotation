@@ -7,7 +7,8 @@
 - 当前版本：`1.1.2`；最低兼容构建：`262`；不设置 `until-build`。
 - 首次版本由手工工作流生成签名 ZIP 和 GitHub Release，再由维护者在 Marketplace 页面创建插件条目并上传该 ZIP。
 - Marketplace 条目存在后，后续稳定版本由与 Gradle `version` 完全一致的标签自动发布，例如 `1.0.2`。
-- 普通 `main` 推送不运行 CI；Pull Request 执行构建与 Plugin Verifier，稳定标签执行发布所需的完整权威校验，避免同一提交在发布前后重复等待两次。
+- 普通 `main` 推送不运行 CI；Pull Request 只构建插件，稳定标签在同一 Runner 内跳过测试和 Plugin Verifier，并依次构建、签名和上传，避免额外下载约 945 MB 的校验依赖以及跨 Runner 重复构建。
+- **Build** 工作流可在 `main` 上手工运行一次无缓存构建，用于重建默认分支共享 Gradle 缓存；它不签名、不上传 Marketplace，也不创建 GitHub Release。
 - `1.0.x` 用于缺陷修复；新增向后兼容功能使用 `1.1.0`。
 
 > GitHub Actions 构建、签名和 `publishPlugin` 成功只证明 Marketplace 接受了上传。JetBrains 仍会审核新插件和每个更新，Marketplace 后台状态才是是否已公开上架的最终证据。
@@ -80,7 +81,7 @@ gh secret set PUBLISH_TOKEN
 
 首次插件条目必须在 Marketplace 页面人工创建；`publishPlugin` 只用于已有条目的后续版本。
 
-1. 通过 Pull Request 的 **Build** 工作流验证发布配置后合入 `main`；直接推送 `main` 不运行 CI。
+1. 通过 Pull Request 的 **Build** 工作流确认插件可以构建后合入 `main`；直接推送 `main` 不运行 CI。
 2. 在 GitHub **Actions → Release → Run workflow** 中选择 `main` 手工运行。工作流通过后会自动创建 `1.0.1` 标签和 GitHub Release，并附带签名 ZIP；工作流使用仓库 `GITHUB_TOKEN` 创建标签，不会递归触发标签发布流程。
 3. 从 GitHub Release 或工作流产物 `selection-annotation-1.0.1-signed` 下载 `*-signed.zip`。
 4. 在 Marketplace 选择 **Upload plugin**：
@@ -108,18 +109,27 @@ gh secret set PUBLISH_TOKEN
 
 5. **Release** 工作流将：
    1. 校验标签与 Gradle 版本完全一致；
-   2. 执行 `buildPlugin`、`verifyPlugin` 和 `signPlugin`；
+   2. 跳过测试和 Plugin Verifier，执行 `buildPlugin` 和 `signPlugin`；
    3. 上传签名包为 GitHub Actions artifact；
-   4. 执行 `publishPlugin`；
+   4. 在同一 Runner 执行 `publishPlugin`，复用刚生成的签名包；
    5. 仅在 Marketplace 上传成功后创建同名 GitHub Release 并附加签名 ZIP。
 6. 进入 Marketplace 后台记录本次更新的真实审核状态。审核通过并公开可见前，不得宣称“已上架”。
+
+## 重建 Gradle 缓存
+
+依赖或构建配置明显变化，或缓存仍包含已移除的 Plugin Verifier 依赖时：
+
+1. 将最新配置推送到 `main`。
+2. 在 GitHub **Actions → Build → Run workflow** 中选择 `main` 手工运行。
+3. 手工任务不读取旧 Gradle 缓存，完成 `buildPlugin -x test` 后将新的精简缓存写入默认分支作用域。
+4. 后续 Pull Request 和稳定标签可以读取该共享缓存；普通 `main` 推送仍不运行 CI。
 
 ## 失败处理
 
 | 失败位置 | 结果 | 处理 |
 | --- | --- | --- |
 | 版本或标签校验 | 未签名、未上传、无 GitHub Release | 修正 `version` 或创建正确的新标签；不要移动已用于发布的标签 |
-| 构建或 Plugin Verifier | 未上传、无 GitHub Release | 查看 `plugin-verifier-report`，修复后发布新提交和标签 |
+| 构建或签名 | 未上传、无 GitHub Release | 查看对应 Job 日志，修复后发布新提交和标签 |
 | 缺少签名或 Token Secret | 未上传、无 GitHub Release | 补齐或轮换 Secret 后重新运行 |
 | `publishPlugin` 明确失败 | 无 GitHub Release | 按错误修正；如果响应含糊，先查 Marketplace 后台是否已收到该版本，避免重复上传 |
 | 首次签名成功，GitHub Release 失败 | Marketplace 尚未上传，GitHub Release 缺失 | 只重新运行失败的 `initial-github-release` job |
@@ -132,10 +142,10 @@ gh secret set PUBLISH_TOKEN
 
 | 证据 | 证明范围 |
 | --- | --- |
-| Pull Request Build 工作流 URL 与结论（如有） | 合入前的对应提交已构建并通过 Plugin Verifier；直接推送 `main` 时没有此证据 |
-| Release 工作流 `package` job 结论 | 标签提交已完成权威构建、Plugin Verifier 和签名 |
+| Pull Request Build 工作流 URL 与结论（如有） | 合入前的对应提交已成功构建；不包含测试或 Plugin Verifier，直接推送 `main` 时没有此证据 |
+| Release 工作流 `package` job 结论 | 标签提交已完成构建和签名；Release 不运行测试或 Plugin Verifier |
 | 首次 Release 工作流 URL 与 `initial-github-release` job 结论 | `1.0.1` 签名 ZIP 和 GitHub Release 已生成或失败 |
-| 后续 Release 工作流 URL 与 `publish`、`github-release-after-publish` job 结论 | Marketplace 上传请求与 GitHub Release 创建成功或失败 |
+| 后续 Release 工作流 URL、`package` 中的 `Publish plugin` step 与 `github-release-after-publish` job 结论 | 同一签名包的 Marketplace 上传请求与 GitHub Release 创建成功或失败 |
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
