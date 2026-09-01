@@ -23,7 +23,7 @@ final class AnnotationFormatter {
         if (!comment.isEmpty()) {
             payload.append(comment).append('\n');
         } else {
-            payload.append('\n');
+            payload.append("\n\n");
         }
         payload.append('\n');
 
