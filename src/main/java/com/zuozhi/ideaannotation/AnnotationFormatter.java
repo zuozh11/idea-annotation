@@ -10,7 +10,16 @@ final class AnnotationFormatter {
     }
 
     static String format(AnnotationContext context, String rawComment) {
-        StringBuilder payload = new StringBuilder();
+        String comment = rawComment.strip();
+        if (comment.isEmpty() && context.selections().stream().allMatch(
+            AnnotationContext.Selection::wholeLine
+        )) {
+            return formatLinks(context.selections().stream()
+                .map(selection -> selectionLink(context, selection))
+                .toList());
+        }
+
+        StringBuilder payload = new StringBuilder("\n");
         for (int index = 0; index < context.selections().size(); index++) {
             if (index > 0) {
                 payload.append(">\n");
@@ -19,11 +28,12 @@ final class AnnotationFormatter {
             payload.append("> ")
                 .append(selectionLink(context, selection))
                 .append('\n');
-            appendCodeBlock(payload, selection.text(), context.language());
+            if (!selection.wholeLine()) {
+                appendCodeBlock(payload, selection.text(), context.language());
+            }
         }
 
-        String comment = rawComment.strip();
-        payload.append("_User comment:_\n");
+        payload.append("\n_User comment:_\n");
         if (comment.isEmpty()) {
             return payload.append("\n\n\n---\n\n").toString();
         }
@@ -34,9 +44,12 @@ final class AnnotationFormatter {
     }
 
     static String formatPaths(List<VirtualFile> files) {
-        List<String> links = files.stream()
+        return formatLinks(files.stream()
             .map(file -> markdownLink(file.getName(), file.toNioPath().toString()))
-            .toList();
+            .toList());
+    }
+
+    private static String formatLinks(List<String> links) {
         if (links.size() == 1) {
             return " " + links.getFirst() + " ";
         }
@@ -71,64 +84,11 @@ final class AnnotationFormatter {
     }
 
     private static void appendCodeBlock(StringBuilder payload, String text, String language) {
-        String content = removeCommonIndent(text);
-        String fence = "`".repeat(Math.max(3, longestBacktickRun(content) + 1));
+        String fence = "`".repeat(Math.max(3, longestBacktickRun(text) + 1));
         payload.append("> ").append(fence).append(language).append('\n');
-        Arrays.stream(content.split("\n", -1))
+        Arrays.stream(text.split("\n", -1))
             .forEach(line -> payload.append("> ").append(line).append('\n'));
         payload.append("> ").append(fence).append('\n');
-    }
-
-    private static String removeCommonIndent(String text) {
-        String[] lines = text.split("\n", -1);
-        int firstLine = 0;
-        while (firstLine < lines.length && isBlankLine(lines[firstLine])) {
-            firstLine++;
-        }
-        int lastLine = lines.length;
-        while (lastLine > firstLine && isBlankLine(lines[lastLine - 1])) {
-            lastLine--;
-        }
-        String commonIndent = null;
-        for (int index = firstLine; index < lastLine; index++) {
-            String line = lines[index];
-            if (isBlankLine(line)) {
-                continue;
-            }
-            int indentEnd = 0;
-            while (indentEnd < line.length()
-                && isIndentCharacter(line.charAt(indentEnd))) {
-                indentEnd++;
-            }
-            String indent = line.substring(0, indentEnd);
-            if (commonIndent == null) {
-                commonIndent = indent;
-            } else {
-                int commonLength = 0;
-                int maximum = Math.min(commonIndent.length(), indent.length());
-                while (commonLength < maximum
-                    && commonIndent.charAt(commonLength) == indent.charAt(commonLength)) {
-                    commonLength++;
-                }
-                commonIndent = commonIndent.substring(0, commonLength);
-            }
-            if (commonIndent.isEmpty()) {
-                break;
-            }
-        }
-
-        int indentLength = commonIndent == null ? 0 : commonIndent.length();
-        return String.join("\n", Arrays.stream(lines, firstLine, lastLine)
-            .map(line -> isBlankLine(line) ? "" : line.substring(indentLength))
-            .toList());
-    }
-
-    private static boolean isBlankLine(String line) {
-        return line.chars().allMatch(character -> isIndentCharacter((char) character));
-    }
-
-    private static boolean isIndentCharacter(char character) {
-        return character == ' ' || character == '\t';
     }
 
     private static int longestBacktickRun(String text) {
