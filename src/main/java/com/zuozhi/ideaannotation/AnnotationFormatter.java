@@ -69,7 +69,7 @@ final class AnnotationFormatter {
         );
     }
 
-    private static String markdownLink(String text, String absolutePath) {
+    static String markdownLink(String text, String absolutePath) {
         String escapedText = text
             .replace("\\", "\\\\")
             .replace("[", "\\[")

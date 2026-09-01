@@ -10,23 +10,23 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.Inlay;
 import com.intellij.openapi.editor.InlayProperties;
-import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.EditorTextField;
 import com.intellij.ui.RoundedLineBorder;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
@@ -86,30 +86,26 @@ public final class AnnotationEditorService {
 
             Color background = editor.getColorsScheme().getDefaultBackground();
 
-            EditorTextField commentField = new EditorTextField(
-                "",
-                editor.getProject(),
-                PlainTextFileType.INSTANCE
-            ) {
-                @Override
-                protected boolean shouldHaveBorder() {
-                    return false;
-                }
-            };
-            commentField.setOneLineMode(false);
             boolean confirmWithShiftEnter = AnnotationSettings.getInstance()
                 .confirmWithShiftEnter;
-            commentField.setPlaceholder(IdeaAnnotationBundle.message(
-                confirmWithShiftEnter
-                    ? "annotation.input.placeholder.shiftConfirm"
-                    : "annotation.input.placeholder.enterConfirm"
-            ));
-            commentField.setShowPlaceholderWhenFocused(true);
-            commentField.setBackground(background);
-            commentField.setPreferredSize(JBUI.size(INPUT_SIZE.width - 20, 62));
-
             JBLabel errorLabel = new JBLabel(" ");
             errorLabel.setForeground(UIUtil.getErrorForeground());
+            AnnotationCommentField commentField = new AnnotationCommentField(
+                editor.getProject(),
+                IdeaAnnotationBundle.message(
+                    confirmWithShiftEnter
+                        ? "annotation.input.placeholder.shiftConfirm"
+                        : "annotation.input.placeholder.enterConfirm"
+                ),
+                errorLabel::setText,
+                background
+            );
+            JBScrollPane commentScrollPane = new JBScrollPane(commentField);
+            commentScrollPane.setBorder(JBUI.Borders.empty());
+            commentScrollPane.setHorizontalScrollBarPolicy(
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            );
+            commentScrollPane.setPreferredSize(JBUI.size(INPUT_SIZE.width - 20, 62));
 
             JButton cancelButton = new JButton(
                 IdeaAnnotationBundle.message("annotation.action.cancel")
@@ -135,7 +131,7 @@ public final class AnnotationEditorService {
                 new RoundedLineBorder(UIUtil.getBoundsColor(), JBUI.scale(16)),
                 JBUI.Borders.empty(9, 11)
             ));
-            panel.add(commentField, BorderLayout.CENTER);
+            panel.add(commentScrollPane, BorderLayout.CENTER);
             panel.add(footer, BorderLayout.SOUTH);
             panel.setPreferredSize(INPUT_SIZE);
 
@@ -187,7 +183,6 @@ public final class AnnotationEditorService {
                 return;
             }
             inputInlay = inlay;
-            commentField.setDisposedWith(inlay);
             Disposer.register(inlay, () -> {
                 if (inputInlay == inlay) {
                     inputInlay = null;
@@ -199,7 +194,7 @@ public final class AnnotationEditorService {
                 commentField
             );
             boolean[] composingText = {false};
-            commentField.getFocusTarget().addInputMethodListener(new InputMethodListener() {
+            commentField.addInputMethodListener(new InputMethodListener() {
                 @Override
                 public void inputMethodTextChanged(InputMethodEvent event) {
                     AttributedCharacterIterator text = event.getText();
@@ -216,6 +211,9 @@ public final class AnnotationEditorService {
             commentField.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent event) {
+                    if (commentField.consumeLinkNavigationFocusLoss()) {
+                        return;
+                    }
                     Component next = event.getOppositeComponent();
                     if (next != null && !SwingUtilities.isDescendingFrom(next, panel)) {
                         SwingUtilities.invokeLater(() -> {
@@ -233,7 +231,10 @@ public final class AnnotationEditorService {
             cancelButton.addActionListener(event -> closeInput());
             Runnable confirm = () -> {
                 try {
-                    String payload = AnnotationFormatter.format(context, commentField.getText());
+                    String payload = AnnotationFormatter.format(
+                        context,
+                        commentField.getMarkdownText()
+                    );
                     CopyPasteManager.copyTextToClipboard(payload);
                     closeInput();
                     showSuccess(context);
