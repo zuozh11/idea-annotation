@@ -43,7 +43,8 @@ Selection Annotation 是 IntelliJ IDEA 插件，用于把一个或多个编辑�
 示例输出：
 
 ````markdown
-_User comment:_&nbsp;请检查这里的边界条件。
+_User comment:_
+请检查这里的边界条件。
 
 [Image 1](/tmp/selection-annotation-clipboard-example.png)
 
