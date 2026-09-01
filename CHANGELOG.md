@@ -2,7 +2,7 @@
 
 ## 1.3.4 - 2026-09-01
 
-- Moved non-empty user comments before labeled source context and omitted empty comment markers.
+- Moved the user comment before all labeled source context in annotation payloads.
 
 ## 1.3.3 - 2026-09-01
 
