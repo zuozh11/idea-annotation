@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2 - 2026-09-01
+
+- Updated the README input screenshot and output example for the current annotation format.
+
 ## 1.3.1 - 2026-09-01
 
 - Added compact source-link output for whole-line selections and omitted redundant code blocks.

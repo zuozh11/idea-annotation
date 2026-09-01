@@ -44,14 +44,12 @@ Example output:
 
 ````markdown
 > [Example.java (lines 42-45)](/project/src/Example.java)
-> ```java
-> if (value == null) {
->     return Optional.empty();
-> }
-> ```
+
 _User comment:_
 
 Please check the boundary conditions here.
+
+[Image 1](/tmp/selection-annotation-clipboard-example.png)
 
 ---
 
