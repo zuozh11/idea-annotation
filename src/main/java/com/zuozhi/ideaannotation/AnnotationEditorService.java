@@ -70,7 +70,8 @@ public final class AnnotationEditorService {
 
     private static final class EditorController implements Disposable {
         private static final int GAP = 6;
-        private static final Dimension INPUT_SIZE = JBUI.size(520, 112);
+        private static final int INPUT_VERTICAL_GAP = JBUI.scale(12);
+        private static final Dimension INPUT_SIZE = JBUI.size(520, 148);
 
         private final Editor editor;
         private Inlay<ComponentInlayRenderer<JPanel>> inputInlay;
@@ -134,7 +135,7 @@ public final class AnnotationEditorService {
             commentScrollPane.setHorizontalScrollBarPolicy(
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
             );
-            commentScrollPane.setPreferredSize(JBUI.size(INPUT_SIZE.width - 20, 62));
+            commentScrollPane.setPreferredSize(JBUI.size(INPUT_SIZE.width - 20, 98));
 
             JButton cancelButton = new JButton(
                 IdeaAnnotationBundle.message("annotation.action.cancel")
@@ -142,6 +143,8 @@ public final class AnnotationEditorService {
             JButton confirmButton = new JButton(
                 IdeaAnnotationBundle.message("annotation.action.confirm")
             );
+            cancelButton.setOpaque(false);
+            confirmButton.setOpaque(false);
             cancelButton.setMargin(JBUI.insets(3, 12));
             confirmButton.setMargin(JBUI.insets(3, 12));
             JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, JBUI.scale(8), 0));
@@ -155,9 +158,9 @@ public final class AnnotationEditorService {
             footer.add(actions, BorderLayout.EAST);
 
             JPanel panel = new JPanel(new BorderLayout(0, JBUI.scale(6)));
-            panel.setBackground(background);
+            panel.setBackground(UIUtil.getPanelBackground());
             panel.setBorder(BorderFactory.createCompoundBorder(
-                new RoundedLineBorder(UIUtil.getBoundsColor(), JBUI.scale(16)),
+                new RoundedLineBorder(UIUtil.getFocusedBorderColor(), JBUI.scale(16)),
                 JBUI.Borders.empty(9, 11)
             ));
             panel.add(commentScrollPane, BorderLayout.CENTER);
@@ -194,8 +197,16 @@ public final class AnnotationEditorService {
             );
             JPanel inlayContainer = new JPanel(null);
             inlayContainer.setOpaque(false);
-            inlayContainer.setPreferredSize(INPUT_SIZE);
-            panel.setBounds(cardX, 0, INPUT_SIZE.width, INPUT_SIZE.height);
+            inlayContainer.setPreferredSize(new Dimension(
+                INPUT_SIZE.width,
+                INPUT_SIZE.height + INPUT_VERTICAL_GAP * 2
+            ));
+            panel.setBounds(
+                cardX,
+                INPUT_VERTICAL_GAP,
+                INPUT_SIZE.width,
+                INPUT_SIZE.height
+            );
             inlayContainer.add(panel);
 
             InlayProperties properties = new InlayProperties()

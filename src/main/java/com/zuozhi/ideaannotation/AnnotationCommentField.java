@@ -70,7 +70,7 @@ final class AnnotationCommentField extends JTextPane {
         this.linkForeground = linkForeground;
         setBackground(background);
         setForeground(foreground);
-        setBorder(JBUI.Borders.empty());
+        setBorder(JBUI.Borders.empty(4, 6));
         setFont(UIUtil.getLabelFont());
         setTransferHandler(new CommentTransferHandler());
         addCaretListener(event -> {
