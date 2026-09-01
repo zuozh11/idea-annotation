@@ -8,6 +8,7 @@
             <li>Open the annotation input from the floating code toolbar or editor context menu.</li>
             <li>Include the absolute source path and selected line range automatically.</li>
             <li>Add an optional multiline comment and copy the result to the clipboard.</li>
+            <li>Paste local files, directories, or clipboard images as Markdown resource links.</li>
         </ul>
     ]]></description>
 

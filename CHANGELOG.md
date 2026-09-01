@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.1 - 2026-09-01
+
+- Added compact source-link output for whole-line selections and omitted redundant code blocks.
+- Added Copy Selection to the native floating code toolbar.
+- Added local file, directory, and clipboard image pasting to annotation comments.
+- Added atomic clickable resource links with deterministic image names and Markdown serialization.
+- Preserved ordinary text pasting and explicit Enter/Shift+Enter behavior inside the IDEA Action System.
+- Improved the annotation input card spacing, height, border, and button rendering.
+
 ## 1.1.2 - 2026-09-01
 
 - Removed trailing blank lines from each selected text block.

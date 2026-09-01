@@ -18,7 +18,9 @@ Selection Annotation is an IntelliJ IDEA plugin that turns one or more editor se
 
 - Open **Annotate…** from the native IDEA floating code toolbar or the editor context menu.
 - Annotate multiple carets at once with one shared multiline comment.
-- Copy selected context directly with **Option+C** on macOS or **Alt+C** on Windows/Linux.
+- Paste local files, directories, or clipboard images into the comment as clickable resource links.
+- Copy selected context from the native floating code toolbar or directly with **Option+C** on macOS and **Alt+C** on Windows/Linux.
+- Copy whole-line selections as compact source links without repeating the selected code.
 - Copy Markdown links for the current file or Project View files and directories, including multi-selection.
 - Use **Copy Path** from the editor or Project View context menu.
 - Choose whether Enter or Shift+Enter confirms the annotation; the other key inserts a new line.
@@ -32,10 +34,11 @@ Selection Annotation is an IntelliJ IDEA plugin that turns one or more editor se
 
 1. Select one or more text ranges in a local text file.
 2. Click **Annotate…** in the floating code toolbar, or choose **Annotate…** from the editor context menu.
-3. Enter a comment if needed and click **Confirm**, or use the configured confirmation key.
-4. Paste the clipboard content into the target conversation.
+3. Enter a comment and optionally paste local resources or an image from the clipboard.
+4. Click **Confirm**, or use the configured confirmation key.
+5. Paste the clipboard content into the target conversation.
 
-Use **Option+C**/**Alt+C** to copy selected context without opening the input. With no editor selection, it copies the current file link; in Project View, it copies links for the selected files or directories.
+Use **Copy Selection** in the floating code toolbar or **Option+C**/**Alt+C** to copy selected context without opening the input. With no editor selection, the shortcut copies the current file link; in Project View, it copies links for the selected files or directories.
 
 Example output:
 
@@ -97,4 +100,4 @@ The installable ZIP is written to `build/distributions/`; build output is not co
 
 ## Data Boundary
 
-The plugin only reads current selections or focused local file paths, then writes the generated annotation or links to the system clipboard. It does not send network requests, collect telemetry, or persist annotation history. Absolute paths are included in clipboard content, so verify the destination and content before pasting into an external service.
+The plugin only reads current selections, focused local file paths, and resources explicitly pasted into the annotation input. Clipboard images are saved as uniquely named PNG files in the system temporary directory so the generated Markdown can reference them. The plugin does not send network requests, collect telemetry, or persist annotation history. Absolute paths are included in clipboard content, so verify the destination and content before pasting into an external service.
