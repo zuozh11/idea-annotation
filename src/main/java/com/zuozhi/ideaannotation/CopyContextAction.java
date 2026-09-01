@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +15,7 @@ public final class CopyContextAction extends AnAction {
         boolean available = editor != null
             ? AnnotationContext.localTextFile(editor) != null
             : PathContext.from(event) != null;
+        event.getPresentation().putClientProperty(ActionUtil.SHOW_TEXT_IN_TOOLBAR, true);
         event.getPresentation().setEnabled(available);
     }
 
