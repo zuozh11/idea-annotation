@@ -19,7 +19,7 @@ final class AnnotationFormatter {
                 .toList());
         }
 
-        StringBuilder payload = new StringBuilder("\n");
+        StringBuilder payload = new StringBuilder();
         for (int index = 0; index < context.selections().size(); index++) {
             if (index > 0) {
                 payload.append(">\n");

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3 - 2026-09-01
+
+- Removed the leading blank line from annotation payloads.
+
 ## 1.3.2 - 2026-09-01
 
 - Updated the README input screenshot and output example for the current annotation format.

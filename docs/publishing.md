@@ -4,7 +4,7 @@
 
 - 插件 ID：`com.zuozhi.ideaannotation`，发布后不可变更。
 - Marketplace 名称：`Selection Annotation`。原名称含 `IDEA`，不符合 Marketplace 对插件名称不得包含 JetBrains 产品名称的审核规则。
-- 当前版本：`1.3.2`；最低兼容构建：`262`；不设置 `until-build`。
+- 当前版本：`1.3.3`；最低兼容构建：`262`；不设置 `until-build`。
 - 首次版本由手工工作流生成签名 ZIP 和 GitHub Release，再由维护者在 Marketplace 页面创建插件条目并上传该 ZIP。
 - Marketplace 条目存在后，后续稳定版本由与 Gradle `version` 完全一致的标签自动发布，例如 `1.0.2`。
 - 普通 `main` 推送不运行 CI；Pull Request 只构建插件，稳定标签在同一 Runner 内跳过测试和 Plugin Verifier，并依次构建、签名和上传，避免额外下载约 945 MB 的校验依赖以及跨 Runner 重复构建。
@@ -155,7 +155,7 @@ gh secret set PUBLISH_TOKEN
 - 提交 `0bccfcb` 已推送到 `main`，稳定标签 `1.3.2` 指向该提交并已推送。
 - [Release #33466093001](https://github.com/zuozh11/idea-annotation/actions/runs/33466093001) 已完成版本校验、构建、签名、Marketplace 上传和 GitHub Release 创建；`Build signed package` 与 `Create GitHub Release after Marketplace upload` job 均成功。
 - [GitHub Release 1.3.2](https://github.com/zuozh11/idea-annotation/releases/tag/1.3.2) 已创建，正式资产为 `idea-annotation-1.3.2-signed.zip`。
-- Marketplace `publishPlugin` 已成功；2026-09-01 11:29 CST 公共 API 显示插件 `hasUnapprovedUpdate=true`，公开更新仍为已批准并列出的 `1.1.2`。这证明 `1.3.2` 已被 Marketplace 接受但仍待 JetBrains 审核，不代表已经公开上架。
+- Marketplace `publishPlugin` 已成功；2026-09-01 12:04 CST 公共 API 显示更新 `1158286` 的 `approve=true`、`listed=true`，公开版本为 `1.3.2`。这证明 `1.3.2` 已通过 JetBrains 审核并公开列出。
 - GitHub Release 中的签名版 `1.3.2` 已安装到正式 IntelliJ IDEA 2026.2 用户插件目录；安装包内元数据显示版本为 `1.3.2`、插件 ID 为 `com.zuozhi.ideaannotation`、`since-build=262`。当前正式 IDEA 进程仍在运行，需要重启后才会加载新版本。
 - 被替换的旧版插件目录保留在 `/tmp/idea-annotation-before-1.3.2-20260901112842`，可在临时目录尚未清理时用于回退。
 
