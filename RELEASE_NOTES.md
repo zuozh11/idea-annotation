@@ -1,3 +1,3 @@
 <ul>
-    <li>Removed the leading blank line from annotation payloads.</li>
+    <li>Moved the user comment before all labeled source context in annotation payloads.</li>
 </ul>

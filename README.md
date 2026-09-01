@@ -43,13 +43,12 @@ Use **Copy Selection** in the floating code toolbar or **Option+C**/**Alt+C** to
 Example output:
 
 ````markdown
-> [Example.java (lines 42-45)](/project/src/Example.java)
-
-_User comment:_
-
-Please check the boundary conditions here.
+_User comment:_ Please check the boundary conditions here.
 
 [Image 1](/tmp/selection-annotation-clipboard-example.png)
+
+> _Source:_
+> [Example.java (lines 42-45)](/project/src/Example.java)
 
 ---
 

@@ -19,13 +19,19 @@ final class AnnotationFormatter {
                 .toList());
         }
 
-        StringBuilder payload = new StringBuilder();
+        StringBuilder payload = new StringBuilder("_User comment:_");
+        if (!comment.isEmpty()) {
+            payload.append(' ').append(comment);
+        }
+        payload.append("\n\n");
+
         for (int index = 0; index < context.selections().size(); index++) {
             if (index > 0) {
                 payload.append(">\n");
             }
             AnnotationContext.Selection selection = context.selections().get(index);
-            payload.append("> ")
+            payload.append("> _Source:_\n")
+                .append("> ")
                 .append(selectionLink(context, selection))
                 .append('\n');
             if (!selection.wholeLine()) {
@@ -33,14 +39,7 @@ final class AnnotationFormatter {
             }
         }
 
-        payload.append("\n_User comment:_\n");
-        if (comment.isEmpty()) {
-            return payload.append("\n\n\n---\n\n").toString();
-        }
-        return payload.append('\n')
-            .append(comment)
-            .append("\n\n---\n\n")
-            .toString();
+        return payload.append("\n---\n\n").toString();
     }
 
     static String formatPaths(List<VirtualFile> files) {
