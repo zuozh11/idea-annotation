@@ -1,3 +1,3 @@
 <ul>
-    <li>Moved the user comment before labeled source context and numbered multiple sources.</li>
+    <li>Moved the user comment before labeled source context with nonbreaking spacing and numbered multiple sources.</li>
 </ul>
