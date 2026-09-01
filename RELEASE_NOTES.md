@@ -1,3 +1,3 @@
 <ul>
-    <li>Moved the user comment before all labeled source context in annotation payloads.</li>
+    <li>Moved the user comment before labeled source context and numbered multiple sources.</li>
 </ul>

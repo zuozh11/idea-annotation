@@ -25,12 +25,17 @@ final class AnnotationFormatter {
         }
         payload.append("\n\n");
 
+        boolean multipleSelections = context.selections().size() > 1;
         for (int index = 0; index < context.selections().size(); index++) {
             if (index > 0) {
                 payload.append(">\n");
             }
             AnnotationContext.Selection selection = context.selections().get(index);
-            payload.append("> _Source:_\n")
+            payload.append("> _Source");
+            if (multipleSelections) {
+                payload.append(' ').append(index + 1);
+            }
+            payload.append(":_\n")
                 .append("> ")
                 .append(selectionLink(context, selection))
                 .append('\n');
