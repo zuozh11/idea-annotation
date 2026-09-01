@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.Inlay;
 import com.intellij.openapi.editor.InlayProperties;
+import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.ui.MessageType;
@@ -37,6 +38,7 @@ import java.awt.FlowLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
@@ -84,7 +86,15 @@ public final class AnnotationEditorService {
             }
             closeInput();
 
-            Color background = editor.getColorsScheme().getDefaultBackground();
+            var colorsScheme = editor.getColorsScheme();
+            Color background = colorsScheme.getDefaultBackground();
+            Color foreground = colorsScheme.getDefaultForeground();
+            Color linkForeground = colorsScheme.getAttributes(
+                EditorColors.REFERENCE_HYPERLINK_COLOR
+            ).getForegroundColor();
+            if (linkForeground == null) {
+                linkForeground = foreground;
+            }
 
             boolean confirmWithShiftEnter = AnnotationSettings.getInstance()
                 .confirmWithShiftEnter;
@@ -98,8 +108,27 @@ public final class AnnotationEditorService {
                         : "annotation.input.placeholder.enterConfirm"
                 ),
                 errorLabel::setText,
-                background
+                background,
+                foreground,
+                linkForeground
             );
+            commentField.setFont(editor.getContentComponent().getFont());
+            Color caretColor = colorsScheme.getColor(EditorColors.CARET_COLOR);
+            if (caretColor != null) {
+                commentField.setCaretColor(caretColor);
+            }
+            Color selectionBackground = colorsScheme.getColor(
+                EditorColors.SELECTION_BACKGROUND_COLOR
+            );
+            if (selectionBackground != null) {
+                commentField.setSelectionColor(selectionBackground);
+            }
+            Color selectionForeground = colorsScheme.getColor(
+                EditorColors.SELECTION_FOREGROUND_COLOR
+            );
+            if (selectionForeground != null) {
+                commentField.setSelectedTextColor(selectionForeground);
+            }
             JBScrollPane commentScrollPane = new JBScrollPane(commentField);
             commentScrollPane.setBorder(JBUI.Borders.empty());
             commentScrollPane.setHorizontalScrollBarPolicy(
@@ -191,6 +220,18 @@ public final class AnnotationEditorService {
 
             DumbAwareAction.create(event -> closeInput()).registerCustomShortcutSet(
                 new CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)),
+                commentField
+            );
+            DumbAwareAction.create(event -> {
+                var contents = CopyPasteManager.getInstance().getContents();
+                if (contents != null) {
+                    commentField.getTransferHandler().importData(commentField, contents);
+                }
+            }).registerCustomShortcutSet(
+                new CustomShortcutSet(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_V,
+                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()
+                )),
                 commentField
             );
             boolean[] composingText = {false};

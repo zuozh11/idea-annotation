@@ -23,9 +23,11 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.font.TextAttribute;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -37,7 +39,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 final class AnnotationCommentField extends JTextPane {
@@ -47,19 +51,25 @@ final class AnnotationCommentField extends JTextPane {
     private final Project project;
     private final String placeholder;
     private final Consumer<String> showError;
+    private final Color linkForeground;
     private boolean linkNavigation;
+    private int nextImageNumber = 1;
 
     AnnotationCommentField(
         Project project,
         String placeholder,
         Consumer<String> showError,
-        Color background
+        Color background,
+        Color foreground,
+        Color linkForeground
     ) {
         super(new DefaultStyledDocument());
         this.project = project;
         this.placeholder = placeholder;
         this.showError = showError;
+        this.linkForeground = linkForeground;
         setBackground(background);
+        setForeground(foreground);
         setBorder(JBUI.Borders.empty());
         setFont(UIUtil.getLabelFont());
         setTransferHandler(new CommentTransferHandler());
@@ -117,7 +127,10 @@ final class AnnotationCommentField extends JTextPane {
                 invalidItems++;
                 continue;
             }
-            candidates.add(new FileLink(name.toString(), path));
+            candidates.add(new FileLink(
+                isImageFile(path) ? nextImageName() : name.toString(),
+                path
+            ));
         }
 
         PasteLocation location = pasteLocation();
@@ -153,6 +166,7 @@ final class AnnotationCommentField extends JTextPane {
 
         BufferedImage bufferedImage = toBufferedImage(image);
         PasteLocation location = pasteLocation();
+        String imageName = nextImageName();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             Path temporaryFile = null;
             try {
@@ -166,7 +180,7 @@ final class AnnotationCommentField extends JTextPane {
                 Path imageFile = temporaryFile;
                 ApplicationManager.getApplication().invokeLater(() -> {
                     insertLinks(List.of(new FileLink(
-                        "剪贴板图片",
+                        imageName,
                         imageFile
                     )), false, location);
                     showError.accept(" ");
@@ -234,7 +248,20 @@ final class AnnotationCommentField extends JTextPane {
     }
 
     private JComponent linkComponent(FileLink link) {
-        JBLabel label = new JBLabel("<html><a href=''>" + escapeHtml(link.name()) + "</a></html>");
+        JBLabel label = new JBLabel(link.name());
+        label.setForeground(linkForeground);
+        label.setFont(getFont().deriveFont(java.util.Map.of(
+            TextAttribute.UNDERLINE,
+            TextAttribute.UNDERLINE_ON
+        )));
+        label.setBorder(JBUI.Borders.empty(0, 3));
+        Dimension size = label.getPreferredSize();
+        label.setMinimumSize(size);
+        label.setMaximumSize(size);
+        int baseline = label.getBaseline(size.width, size.height);
+        if (baseline >= 0 && size.height > 0) {
+            label.setAlignmentY((float) baseline / size.height);
+        }
         label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         label.setToolTipText(link.path().toString());
         label.addMouseListener(new MouseAdapter() {
@@ -315,13 +342,23 @@ final class AnnotationCommentField extends JTextPane {
         return bufferedImage;
     }
 
-    private static String escapeHtml(String text) {
-        return text
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&#39;");
+    private String nextImageName() {
+        return "Image " + nextImageNumber++;
+    }
+
+    private static boolean isImageFile(Path path) {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            return false;
+        }
+        String name = fileName.toString();
+        int separator = name.lastIndexOf('.');
+        if (separator < 0 || separator == name.length() - 1) {
+            return false;
+        }
+        String extension = name.substring(separator + 1).toLowerCase(Locale.ROOT);
+        return Arrays.stream(ImageIO.getReaderFileSuffixes())
+            .anyMatch(extension::equalsIgnoreCase);
     }
 
     private record FileLink(String name, Path path) {
