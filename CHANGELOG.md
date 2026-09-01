@@ -2,7 +2,7 @@
 
 ## 1.3.4 - 2026-09-01
 
-- Moved the user comment before labeled source context on separate lines and numbered multiple sources.
+- Moved the emphasized user comment before labeled source context and numbered multiple sources.
 
 ## 1.3.3 - 2026-09-01
 

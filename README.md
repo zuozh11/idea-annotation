@@ -43,7 +43,7 @@ Use **Copy Selection** in the floating code toolbar or **Option+C**/**Alt+C** to
 Example output:
 
 ````markdown
-_User comment:_
+**_User comment:_**
 Please check the boundary conditions here.
 
 [Image 1](/tmp/selection-annotation-clipboard-example.png)

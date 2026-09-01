@@ -19,9 +19,11 @@ final class AnnotationFormatter {
                 .toList());
         }
 
-        StringBuilder payload = new StringBuilder("_User comment:_\n");
+        StringBuilder payload = new StringBuilder("**_User comment:_**\n");
         if (!comment.isEmpty()) {
             payload.append(comment).append('\n');
+        } else {
+            payload.append('\n');
         }
         payload.append('\n');
 
