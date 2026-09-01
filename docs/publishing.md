@@ -149,6 +149,15 @@ gh secret set PUBLISH_TOKEN
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
+### 2026-09-01 1.3.4 当前状态
+
+- 用户在 IDEA 2026.2 sandbox 中迭代确认最终批注载荷格式，并明确要求发布 `1.3.4`。
+- 提交 `3b4b3c1` 已推送到 `main`，稳定标签 `1.3.4` 指向该提交并已推送。
+- [Release #33478742262](https://github.com/zuozh11/idea-annotation/actions/runs/33478742262) 已完成版本校验、构建、签名、Marketplace 上传和 GitHub Release 创建；`Build signed package` 与 `Create GitHub Release after Marketplace upload` job 均成功。
+- [GitHub Release 1.3.4](https://github.com/zuozh11/idea-annotation/releases/tag/1.3.4) 已创建，正式资产为 `idea-annotation-1.3.4-signed.zip`。
+- Marketplace `publishPlugin` 已成功；2026-09-01 14:45 CST 公共 API 显示插件 `hasUnapprovedUpdate=true`，已批准并列出的最新公开版本为 `1.3.3`。这证明 `1.3.4` 上传已被 Marketplace 接受但仍待 JetBrains 审核，不代表已经公开上架。
+- 本次未要求安装，未替换正式 IntelliJ IDEA 用户插件目录中的现有版本。
+
 ### 2026-09-01 1.3.3 当前状态
 
 - 用户已在 IDEA 2026.2 sandbox 中人工验收批注载荷不再以空白行开头，并明确确认发布 `1.3.3`。
