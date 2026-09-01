@@ -344,7 +344,15 @@ final class AnnotationCommentField extends JTextPane {
             if (!canImport(support)) {
                 return false;
             }
-            Transferable transferable = support.getTransferable();
+            return importTransferable(support.getTransferable());
+        }
+
+        @Override
+        public boolean importData(JComponent component, Transferable transferable) {
+            return importTransferable(transferable);
+        }
+
+        private boolean importTransferable(Transferable transferable) {
             try {
                 if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                     pasteFiles(transferable);
