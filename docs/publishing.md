@@ -156,7 +156,8 @@ gh secret set PUBLISH_TOKEN
 - [Release #33478742262](https://github.com/zuozh11/idea-annotation/actions/runs/33478742262) 已完成版本校验、构建、签名、Marketplace 上传和 GitHub Release 创建；`Build signed package` 与 `Create GitHub Release after Marketplace upload` job 均成功。
 - [GitHub Release 1.3.4](https://github.com/zuozh11/idea-annotation/releases/tag/1.3.4) 已创建，正式资产为 `idea-annotation-1.3.4-signed.zip`。
 - Marketplace `publishPlugin` 已成功；2026-09-01 14:45 CST 公共 API 显示插件 `hasUnapprovedUpdate=true`，已批准并列出的最新公开版本为 `1.3.3`。这证明 `1.3.4` 上传已被 Marketplace 接受但仍待 JetBrains 审核，不代表已经公开上架。
-- 本次未要求安装，未替换正式 IntelliJ IDEA 用户插件目录中的现有版本。
+- GitHub Release 中的签名版 `1.3.4` 已安装到正式 IntelliJ IDEA 2026.2 用户插件目录；安装包内元数据显示版本为 `1.3.4`、插件 ID 为 `com.zuozhi.ideaannotation`、`since-build=262`。安装时正式 IDEA 进程未运行，下次启动将直接加载新版本。
+- 被替换的 `1.3.3` 插件目录保留在 `/tmp/idea-annotation-before-1.3.4-20260901144628`，可在临时目录尚未清理时用于回退。
 
 ### 2026-09-01 1.3.3 当前状态
 
