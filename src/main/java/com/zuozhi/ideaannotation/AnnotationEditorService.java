@@ -298,6 +298,17 @@ public final class AnnotationEditorService {
                 )),
                 commentField
             );
+            DumbAwareAction.create(event -> {
+                if (!composingText[0]) {
+                    commentField.replaceSelection("\n");
+                }
+            }).registerCustomShortcutSet(
+                new CustomShortcutSet(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_ENTER,
+                    confirmWithShiftEnter ? 0 : InputEvent.SHIFT_DOWN_MASK
+                )),
+                commentField
+            );
 
             SwingUtilities.invokeLater(commentField::requestFocusInWindow);
         }
