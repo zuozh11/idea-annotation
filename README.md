@@ -18,6 +18,7 @@ Selection Annotation is an IntelliJ IDEA plugin that turns one or more editor se
 
 - Open **Annotate…** from the native IDEA floating code toolbar or the editor context menu.
 - Annotate multiple carets at once with one shared multiline comment.
+- Keep a theme-aware, auto-growing annotation editor open across focus changes while every referenced selection remains outlined.
 - Paste local files, directories, or clipboard images into the comment as clickable resource links.
 - Copy selected context from the native floating code toolbar or directly with **Option+C** on macOS and **Alt+C** on Windows/Linux.
 - Copy whole-line selections as compact source links without repeating the selected code.
