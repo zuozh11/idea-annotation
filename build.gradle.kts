@@ -1,10 +1,12 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
 plugins {
     id("java")
     id("org.jetbrains.intellij.platform") version "2.18.1"
 }
 
 group = "com.zuozhi.ideaannotation"
-version = "1.3.4"
+version = "1.3.5"
 
 repositories {
     mavenCentral()
@@ -21,7 +23,9 @@ dependencies {
         } else {
             local(localIdeaHome)
         }
+        testFramework(TestFrameworkType.Platform)
     }
+    testImplementation("junit:junit:4.13.2")
 }
 
 java {

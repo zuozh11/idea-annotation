@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.5 - 2026-09-03
+
+- Restyled the annotation editor to match the inline breakpoint log editor, with a localized title and overlaid actions.
+- Added theme-aware borders around every source selection while its annotation editor is open.
+- Prevented stale annotation inlays from blocking later annotation inputs.
+
 ## 1.3.4 - 2026-09-01
 
 - Moved the emphasized user comment before labeled source context and numbered multiple sources.
