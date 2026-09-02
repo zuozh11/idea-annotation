@@ -15,6 +15,11 @@ import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorFontType;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.ex.EditorGutterComponentEx;
+import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.editor.markup.HighlighterLayer;
+import com.intellij.openapi.editor.markup.HighlighterTargetArea;
+import com.intellij.openapi.editor.markup.RangeHighlighter;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.ui.MessageType;
@@ -52,7 +57,9 @@ import java.awt.event.InputMethodEvent;
 import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
 import java.text.AttributedCharacterIterator;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service(Service.Level.APP)
@@ -81,6 +88,8 @@ public final class AnnotationEditorService {
         private static final int MIN_INPUT_WIDTH = JBUI.scale(200);
 
         private final Editor editor;
+        private final List<Inlay<?>> ownedInputInlays = new ArrayList<>();
+        private final List<RangeHighlighter> selectionHighlighters = new ArrayList<>();
         private Inlay<?> inputInlay;
 
         private EditorController(Editor editor) {
@@ -409,9 +418,13 @@ public final class AnnotationEditorService {
                 return;
             }
             inputInlay = inlay;
+            ownedInputInlays.add(inlay);
+            highlightSelections(context, activeTitleForeground);
             Disposer.register(inlay, () -> {
+                ownedInputInlays.remove(inlay);
                 if (inputInlay == inlay) {
                     inputInlay = null;
+                    clearSelectionHighlights();
                 }
             });
             commentField.getDocument().addDocumentListener(new DocumentListener() {
@@ -609,6 +622,30 @@ public final class AnnotationEditorService {
                 .orElseThrow();
         }
 
+        private void highlightSelections(AnnotationContext context, Color borderColor) {
+            TextAttributes attributes = new TextAttributes();
+            attributes.setEffectColor(borderColor);
+            attributes.setEffectType(EffectType.ROUNDED_BOX);
+            for (AnnotationContext.Selection selection : context.selections()) {
+                selectionHighlighters.add(editor.getMarkupModel().addRangeHighlighter(
+                    selection.startOffset(),
+                    selection.endOffset(),
+                    HighlighterLayer.SELECTION,
+                    attributes,
+                    HighlighterTargetArea.EXACT_RANGE
+                ));
+            }
+        }
+
+        private void clearSelectionHighlights() {
+            for (RangeHighlighter highlighter : selectionHighlighters) {
+                if (highlighter.isValid()) {
+                    highlighter.dispose();
+                }
+            }
+            selectionHighlighters.clear();
+        }
+
         private void showSuccess(AnnotationContext context) {
             Dimension balloonSize = JBUI.size(120, 32);
             JBPopupFactory.getInstance()
@@ -629,11 +666,12 @@ public final class AnnotationEditorService {
         }
 
         private void closeInput() {
-            Inlay<?> inlay = inputInlay;
             inputInlay = null;
-            if (inlay != null && inlay.isValid()) {
-                Disposer.dispose(inlay);
+            for (Inlay<?> inlay : List.copyOf(ownedInputInlays)) {
+                inlay.dispose();
             }
+            ownedInputInlays.clear();
+            clearSelectionHighlights();
         }
 
         @Override

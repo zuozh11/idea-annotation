@@ -16,7 +16,9 @@ Selection Annotation 的编辑器内批注输入区跟随 IntelliJ IDEA 断点�
 - 批注 Component Inlay 使用 `showWhenFolded(true)`，保持多 Caret 选区下的可见 bounds；批注载荷使用创建时保存的完整多选区上下文。
 - 失去焦点时保留批注编辑器，只通过“取消”、`Esc`、确认成功或编辑器释放关闭。
 - 每个编辑器同时只保留一个批注 UI；再次触发批注时先关闭旧 UI，再使用当前选区打开新 UI。
-- 保持文件、目录与图片粘贴，资源链接打开，Enter/Shift+Enter 设置，Esc 取消，输入法组合态，失焦关闭，失败保留内容和成功提示行为。
+- 批注 UI 存在期间，对本次批注上下文的全部 Selection 使用编辑器原生 Range Highlighter 绘制跟随主题的活动标题色边框，不改变文档、选区文字或批注载荷。
+- 选区边框与批注实例共享生命周期：取消、`Esc`、确认成功、新实例替换、Inlay 释放或 Editor 释放时清理；复制失败保留输入时同时保留边框。
+- 保持文件、目录与图片粘贴，资源链接打开，Enter/Shift+Enter 设置，Esc 取消，输入法组合态，失焦保留，失败保留内容和成功提示行为。
 - 不改变批注载荷或独立路径链接的 Markdown 协议。
 
 ## Observable Difference
