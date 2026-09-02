@@ -52,7 +52,6 @@ final class AnnotationCommentField extends JTextPane {
     private final String placeholder;
     private final Consumer<String> showError;
     private final Color linkForeground;
-    private boolean linkNavigation;
     private int nextImageNumber = 1;
 
     AnnotationCommentField(
@@ -70,7 +69,8 @@ final class AnnotationCommentField extends JTextPane {
         this.linkForeground = linkForeground;
         setBackground(background);
         setForeground(foreground);
-        setBorder(JBUI.Borders.empty(4, 6));
+        setOpaque(false);
+        setBorder(JBUI.Borders.empty());
         setFont(UIUtil.getLabelFont());
         setTransferHandler(new CommentTransferHandler());
         addCaretListener(event -> {
@@ -83,14 +83,6 @@ final class AnnotationCommentField extends JTextPane {
 
     String getMarkdownText() {
         return serialize(0, getDocument().getLength());
-    }
-
-    boolean consumeLinkNavigationFocusLoss() {
-        if (!linkNavigation) {
-            return false;
-        }
-        linkNavigation = false;
-        return true;
     }
 
     @Override
@@ -284,17 +276,11 @@ final class AnnotationCommentField extends JTextPane {
                     return;
                 }
                 showError.accept(" ");
-                linkNavigation = true;
                 if (file.isDirectory()) {
                     ProjectView.getInstance(project).select(null, file, false);
                 } else {
                     new OpenFileDescriptor(project, file).navigate(false);
                 }
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    if (isFocusOwner()) {
-                        linkNavigation = false;
-                    }
-                });
             });
         });
     }
