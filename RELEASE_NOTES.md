@@ -1,3 +1,3 @@
 <ul>
-    <li>Restored immediate focus of the annotation input and dismissal of the floating code toolbar after choosing Annotate.</li>
+    <li>Preserved the relative column of a partial first line while normalizing complete lines in multiline selections.</li>
 </ul>

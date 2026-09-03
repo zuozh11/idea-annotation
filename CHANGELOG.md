@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.9 - 2026-09-03
+
+- Preserved the relative column of a partial first line while normalizing complete lines in multiline selections.
+
 ## 1.3.8 - 2026-09-03
 
 - Restored immediate focus of the annotation input and dismissal of the floating code toolbar after choosing Annotate.

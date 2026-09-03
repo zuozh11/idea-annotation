@@ -67,7 +67,7 @@ record AnnotationContext(
         if (text == null || text.isEmpty() || endOffset <= startOffset) {
             return null;
         }
-        String content = removeCommonIndent(text);
+        String content = normalizeSelection(text, document, startOffset);
         if (content.isEmpty()) {
             return null;
         }
@@ -79,6 +79,31 @@ record AnnotationContext(
             document.getLineNumber(endOffset - 1) + 1,
             isWholeLineSelection(document, startOffset, endOffset)
         );
+    }
+
+    private static String normalizeSelection(
+        String text,
+        Document document,
+        int startOffset
+    ) {
+        int line = document.getLineNumber(startOffset);
+        int lineStart = document.getLineStartOffset(line);
+        int lineEnd = document.getLineEndOffset(line);
+        CharSequence content = document.getCharsSequence();
+        int firstContentOffset = lineStart;
+        while (firstContentOffset < lineEnd
+            && isIndentCharacter(content.charAt(firstContentOffset))) {
+            firstContentOffset++;
+        }
+        boolean partialFirstLine = startOffset > firstContentOffset;
+        if (partialFirstLine) {
+            return removeCommonIndent(
+                text,
+                content.subSequence(lineStart, firstContentOffset).toString(),
+                startOffset - lineStart
+            );
+        }
+        return removeCommonIndent(content.subSequence(lineStart, startOffset) + text, null, 0);
     }
 
     private static boolean isWholeLineSelection(
@@ -132,7 +157,11 @@ record AnnotationContext(
         return false;
     }
 
-    private static String removeCommonIndent(String text) {
+    private static String removeCommonIndent(
+        String text,
+        String partialFirstLineIndent,
+        int partialFirstLineColumn
+    ) {
         String[] lines = text.split("\n", -1);
         int firstLine = 0;
         while (firstLine < lines.length && isBlankLine(lines[firstLine])) {
@@ -142,8 +171,12 @@ record AnnotationContext(
         while (lastLine > firstLine && isBlankLine(lines[lastLine - 1])) {
             lastLine--;
         }
-        String commonIndent = null;
+        boolean partialFirstLine = partialFirstLineIndent != null;
+        String commonIndent = partialFirstLineIndent;
         for (int index = firstLine; index < lastLine; index++) {
+            if (partialFirstLine && index == firstLine) {
+                continue;
+            }
             String line = lines[index];
             if (isBlankLine(line)) {
                 continue;
@@ -171,9 +204,19 @@ record AnnotationContext(
         }
 
         int indentLength = commonIndent == null ? 0 : commonIndent.length();
-        return String.join("\n", Arrays.stream(lines, firstLine, lastLine)
-            .map(line -> isBlankLine(line) ? "" : line.substring(indentLength))
-            .toList());
+        String[] normalizedLines = Arrays.copyOfRange(lines, firstLine, lastLine);
+        for (int index = 0; index < normalizedLines.length; index++) {
+            String line = normalizedLines[index];
+            if (isBlankLine(line)) {
+                normalizedLines[index] = "";
+            } else if (partialFirstLine && index == 0) {
+                normalizedLines[index] = " ".repeat(partialFirstLineColumn - indentLength)
+                    + line;
+            } else {
+                normalizedLines[index] = line.substring(indentLength);
+            }
+        }
+        return String.join("\n", normalizedLines);
     }
 
     private static boolean isBlankLine(String line) {
