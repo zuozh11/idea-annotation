@@ -149,6 +149,15 @@ gh secret set PUBLISH_TOKEN
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
+### 2026-09-03 1.3.7 当前状态
+
+- 用户在 IDEA 2026.2 sandbox 中检查本次批注输出与 README 动图后明确要求发布 `1.3.7`。
+- 提交 `bd675d1` 已推送到 `main`，稳定标签 `1.3.7` 指向该提交并已推送；本地 `buildPlugin -x test` 成功，发布工作流按当前配置跳过测试和 Plugin Verifier。
+- [Release #33708443833](https://github.com/zuozh11/idea-annotation/actions/runs/33708443833) 已完成版本校验、构建、签名、Marketplace 上传和 GitHub Release 创建；`Build signed package` 与 `Create GitHub Release after Marketplace upload` job 均成功。
+- [GitHub Release 1.3.7](https://github.com/zuozh11/idea-annotation/releases/tag/1.3.7) 已创建，正式资产为 `idea-annotation-1.3.7-signed.zip`，GitHub 记录的 SHA-256 为 `42e6a1f1f051802c22a78fd380ffedf4026ce2f354671be73fafa85d8b3b5f45`。
+- Marketplace 最新资源编号为 `1160286`；2026-09-03 10:42 CST 公共插件 API 显示 `approve=false`、`hasUnapprovedUpdate=true`，公开更新 API 中最新已批准并列出的版本仍为 `1.3.4`。这证明 `1.3.7` 上传已被 Marketplace 接受并等待 JetBrains 审核，不代表已经公开上架。
+- 本次未要求安装，未替换正式 IntelliJ IDEA 用户插件目录中的现有版本；为完成发布前打包，本任务启动的 sandbox 已停止。
+
 ### 2026-09-03 1.3.6 当前状态
 
 - 用户已在 IDEA 2026.2 sandbox 中验收公开 Swing Border 的最终视觉，并明确要求发布 `1.3.6`。
