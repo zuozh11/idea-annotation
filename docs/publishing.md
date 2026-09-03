@@ -149,6 +149,15 @@ gh secret set PUBLISH_TOKEN
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
+### 2026-09-03 1.3.9 当前状态
+
+- 用户在 IDEA 2026.2 sandbox 中人工验收多行选区首行局部内容的相对列位置与后续完整行缩进，并明确要求发布 `1.3.9`。
+- 提交 `d88cb61` 已推送到 `main`，稳定标签 `1.3.9` 指向该提交并已推送；本地 `AnnotationContextTest` 的 4 个回归场景通过，发布工作流按当前配置跳过测试和 Plugin Verifier。
+- [Release #33741586558](https://github.com/zuozh11/idea-annotation/actions/runs/33741586558) 已完成版本校验、构建、签名、Marketplace 上传和 GitHub Release 创建；`Build signed package` 与 `Create GitHub Release after Marketplace upload` job 均成功。
+- [GitHub Release 1.3.9](https://github.com/zuozh11/idea-annotation/releases/tag/1.3.9) 已创建，正式资产为 `idea-annotation-1.3.9-signed.zip`，GitHub 记录的 SHA-256 为 `ec477c3a87cb021d6f04164caa8affa3fc813604f3ce0a92b7511cf93fa0e056`。
+- [Marketplace 更新 1160586](https://plugins.jetbrains.com/plugin/33955-selection-annotation/versions/stable/1160586) 于 2026-09-03 17:59 CST 的 API 状态为 `approve=false`、`listed=false`，插件为 `hasUnapprovedUpdate=true`；当前最新已批准并列出的公开版本为 `1.3.8`。这证明 `1.3.9` 上传已被 Marketplace 接受并等待 JetBrains 审核，不代表已经公开上架。
+- 本次发布未要求安装，未替换正式 IntelliJ IDEA 用户插件目录中的现有版本；为完成稳定发布，本任务启动的 sandbox 已停止。
+
 ### 2026-09-03 1.3.8 当前状态
 
 - 提交 `dac4336` 已推送到 `main`，稳定标签 `1.3.8` 指向该提交并已推送；本地 `compileJava` 成功，`1.3.8` sandbox 已加载插件并打开当前仓库，但未将沙箱启动记为人工交互验收。
