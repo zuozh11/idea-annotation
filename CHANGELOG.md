@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.8 - 2026-09-03
+
+- Restored immediate focus of the annotation input and dismissal of the floating code toolbar after choosing Annotate.
+
 ## 1.3.7 - 2026-09-03
 
 - Simplified annotation Markdown by placing compact source links before the comment and removing the footer.

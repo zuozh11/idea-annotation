@@ -1,5 +1,6 @@
 package com.zuozhi.ideaannotation;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -25,6 +26,7 @@ public final class CopyAnnotationAction extends AnAction {
         if (editor == null) {
             return;
         }
+        HintManager.getInstance().hideAllHints();
         ApplicationManager.getApplication()
             .getService(AnnotationEditorService.class)
             .openInput(editor);
