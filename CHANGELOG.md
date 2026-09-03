@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.6 - 2026-09-03
+
+- Replaced the annotation input border's internal IntelliJ API with a plugin-owned public Swing border while preserving its theme-aware appearance.
+
 ## 1.3.5 - 2026-09-03
 
 - Restyled the annotation editor to match the inline breakpoint log editor, with a localized title and overlaid actions.

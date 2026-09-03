@@ -27,7 +27,6 @@ import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.ShadowJava2DBorder;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
@@ -40,11 +39,14 @@ import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.border.AbstractBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -65,6 +67,251 @@ import java.util.Map;
 @Service(Service.Level.APP)
 public final class AnnotationEditorService {
     private final Map<Editor, EditorController> controllers = new IdentityHashMap<>();
+
+    private static final class RoundedInputBorder extends AbstractBorder {
+        private final int arc;
+        private final Color background;
+        private final Color borderColor;
+
+        private RoundedInputBorder(int arc, Color background, Color borderColor) {
+            this.arc = arc;
+            this.background = background;
+            this.borderColor = borderColor;
+        }
+
+        @Override
+        public void paintBorder(
+            Component component,
+            Graphics graphics,
+            int x,
+            int y,
+            int width,
+            int height
+        ) {
+            Graphics2D copy = (Graphics2D) graphics.create();
+            try {
+                copy.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+                );
+                Insets insets = getBorderInsets(component);
+                paintShadow(copy, x, y, width, height, insets);
+                int lineWidth = Math.max(1, JBUI.scale(1));
+                int left = x + insets.left - lineWidth;
+                int top = y + insets.top - lineWidth;
+                int contentWidth = width
+                    - insets.left
+                    - insets.right
+                    + lineWidth * 2
+                    - 1;
+                int contentHeight = height
+                    - insets.top
+                    - insets.bottom
+                    + lineWidth * 2
+                    - 1;
+                copy.setColor(background);
+                copy.fillRoundRect(
+                    left,
+                    top,
+                    contentWidth,
+                    contentHeight,
+                    arc,
+                    arc
+                );
+                copy.setColor(borderColor);
+                copy.drawRoundRect(
+                    left,
+                    top,
+                    contentWidth,
+                    contentHeight,
+                    arc,
+                    arc
+                );
+            } finally {
+                copy.dispose();
+            }
+        }
+
+        private void paintShadow(
+            Graphics2D graphics,
+            int x,
+            int y,
+            int width,
+            int height,
+            Insets insets
+        ) {
+            int left = x + insets.left;
+            int top = y + insets.top;
+            int right = x + width - insets.right;
+            int bottom = y + height - insets.bottom;
+            int contentWidth = width - insets.left - insets.right;
+            int contentHeight = height - insets.top - insets.bottom;
+
+            graphics.setColor(shadowColor("topLeft", "1"));
+            graphics.fillRect(left, top, arc, arc);
+            graphics.setColor(shadowColor("topRight", "1"));
+            graphics.fillRect(right - arc, top, arc, arc);
+            graphics.setColor(shadowColor("bottomRight", "1"));
+            graphics.fillRect(right - arc, bottom - arc, arc, arc);
+            graphics.setColor(shadowColor("bottomLeft", "1"));
+            graphics.fillRect(left, bottom - arc, arc, arc);
+
+            fillGradient(
+                graphics,
+                "top",
+                "0",
+                "1",
+                left,
+                y,
+                left,
+                top,
+                left,
+                y,
+                contentWidth,
+                insets.top
+            );
+            fillGradient(
+                graphics,
+                "bottom",
+                "1",
+                "0",
+                left,
+                bottom,
+                left,
+                y + height,
+                left,
+                bottom,
+                contentWidth,
+                insets.bottom
+            );
+            fillGradient(
+                graphics,
+                "left",
+                "0",
+                "1",
+                x,
+                top,
+                left,
+                top,
+                x,
+                top,
+                insets.left,
+                contentHeight
+            );
+            fillGradient(
+                graphics,
+                "right",
+                "1",
+                "0",
+                right,
+                top,
+                x + width,
+                top,
+                right,
+                top,
+                insets.right,
+                contentHeight
+            );
+
+            paintCorner(graphics, "topLeft", x, y, insets.left, insets.top);
+            paintCorner(graphics, "topRight", right, y, insets.right, insets.top);
+            paintCorner(
+                graphics,
+                "bottomRight",
+                right,
+                bottom,
+                insets.right,
+                insets.bottom
+            );
+            paintCorner(
+                graphics,
+                "bottomLeft",
+                x,
+                bottom,
+                insets.left,
+                insets.bottom
+            );
+        }
+
+        private void paintCorner(
+            Graphics2D graphics,
+            String side,
+            int x,
+            int y,
+            int width,
+            int height
+        ) {
+            int centerX = x + width / 2;
+            int centerY = y + height / 2;
+            int endX = switch (side) {
+                case "topLeft", "bottomLeft" -> x + width;
+                default -> x;
+            };
+            int endY = switch (side) {
+                case "topLeft", "topRight" -> y + height;
+                default -> y;
+            };
+            fillGradient(
+                graphics,
+                side,
+                "0",
+                "1",
+                centerX,
+                centerY,
+                endX,
+                endY,
+                x,
+                y,
+                width,
+                height
+            );
+        }
+
+        private void fillGradient(
+            Graphics2D graphics,
+            String side,
+            String startStop,
+            String endStop,
+            int startX,
+            int startY,
+            int endX,
+            int endY,
+            int x,
+            int y,
+            int width,
+            int height
+        ) {
+            graphics.setPaint(new GradientPaint(
+                startX,
+                startY,
+                shadowColor(side, startStop),
+                endX,
+                endY,
+                shadowColor(side, endStop)
+            ));
+            graphics.fillRect(x, y, width, height);
+        }
+
+        private static Color shadowColor(String side, String stop) {
+            return JBColor.namedColor(
+                "Notification.Shadow." + side + stop + "Color",
+                new Color(200, 200, 200, 50)
+            );
+        }
+
+        @Override
+        public Insets getBorderInsets(Component component) {
+            return JBUI.insets(
+                "Notification.Shadow.borderInsets",
+                JBUI.insets(5)
+            );
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return false;
+        }
+    }
 
     void register(Editor editor) {
         controllers.computeIfAbsent(editor, EditorController::new);
@@ -215,7 +462,7 @@ public final class AnnotationEditorService {
                 }
             };
             commentArea.setOpaque(false);
-            commentArea.setBorder(new ShadowJava2DBorder(
+            commentArea.setBorder(new RoundedInputBorder(
                 INPUT_CORNER_RADIUS,
                 inputBackground,
                 inputBorder
