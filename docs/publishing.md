@@ -149,6 +149,15 @@ gh secret set PUBLISH_TOKEN
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
+### 2026-09-03 1.3.6 当前状态
+
+- 用户已在 IDEA 2026.2 sandbox 中验收公开 Swing Border 的最终视觉，并明确要求发布 `1.3.6`。
+- 提交 `cd3581a` 已推送到 `main`，稳定标签 `1.3.6` 指向该提交并已推送；发布前 Plugin Verifier 1.410 对 `IU-262.8665.337` 的结论为 Compatible、0 Internal API，保留 3 条已授权使用的 Component Inlay Experimental API 提示。
+- [Release #33702521700](https://github.com/zuozh11/idea-annotation/actions/runs/33702521700) 已完成版本校验、构建、签名、Marketplace 上传和 GitHub Release 创建；`Build signed package` 与 `Create GitHub Release after Marketplace upload` job 均成功。
+- [GitHub Release 1.3.6](https://github.com/zuozh11/idea-annotation/releases/tag/1.3.6) 已创建，正式资产为 `idea-annotation-1.3.6-signed.zip`，GitHub 记录的 SHA-256 为 `5270c1adfd0ed814b770df737ad7a573d8f0dfc3439127e647ffa6e54208f33f`。
+- Marketplace 更新编号为 `1160265`；2026-09-03 09:12 CST 公共 API 显示 `approve=false`、`listed=false`、`hasUnapprovedUpdate=true`。这证明 `1.3.6` 上传已被 Marketplace 接受并等待 JetBrains 审核，不代表已经公开上架。
+- 本次未要求安装，未替换正式 IntelliJ IDEA 用户插件目录中的现有版本。
+
 ### 2026-09-03 1.3.5 当前状态
 
 - Pull Request [#1](https://github.com/zuozh11/idea-annotation/pull/1) 已合入 `main`；发布准备提交 `5a2b316` 已推送到 `main`，稳定标签 `1.3.5` 指向该提交并已推送。

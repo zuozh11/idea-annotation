@@ -10,9 +10,7 @@
 
 Selection Annotation is an IntelliJ IDEA plugin that turns one or more editor selections into a compact Markdown annotation ready to paste into Codex or another conversation. It automatically includes local source links, accurate line ranges, de-indented selected text, and a shared comment.
 
-![Selection Annotation input](docs/images/selection-annotation.png)
-
-![Selection Annotation output in Codex](docs/images/selection-annotation-output.png)
+![Selection Annotation workflow](docs/images/selection-annotation.gif)
 
 ## Features
 
