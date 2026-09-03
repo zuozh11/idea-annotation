@@ -2,8 +2,11 @@ package com.zuozhi.ideaannotation;
 
 import com.intellij.openapi.vfs.VirtualFile;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 final class AnnotationFormatter {
     private AnnotationFormatter() {
@@ -19,34 +22,30 @@ final class AnnotationFormatter {
                 .toList());
         }
 
-        StringBuilder payload = new StringBuilder("**_User comment:_**\n");
-        if (!comment.isEmpty()) {
-            payload.append(comment).append('\n');
-        } else {
-            payload.append("\n\n");
-        }
-        payload.append('\n');
-
-        boolean multipleSelections = context.selections().size() > 1;
-        for (int index = 0; index < context.selections().size(); index++) {
-            if (index > 0) {
-                payload.append(">\n");
-            }
-            AnnotationContext.Selection selection = context.selections().get(index);
+        List<SelectionGroup> groups = groupSelections(context.selections());
+        StringBuilder payload = new StringBuilder();
+        boolean multipleGroups = groups.size() > 1;
+        for (int index = 0; index < groups.size(); index++) {
+            SelectionGroup group = groups.get(index);
             payload.append("> _Source");
-            if (multipleSelections) {
+            if (multipleGroups) {
                 payload.append(' ').append(index + 1);
             }
-            payload.append(":_\n")
-                .append("> ")
-                .append(selectionLink(context, selection))
+            payload.append(":_ ")
+                .append(String.join(" ", group.selections().stream()
+                    .map(selection -> selectionLink(context, selection))
+                    .toList()))
                 .append('\n');
-            if (!selection.wholeLine()) {
-                appendCodeBlock(payload, selection.text(), context.language());
+            if (group.selections().stream().anyMatch(selection -> !selection.wholeLine())) {
+                appendCodeBlock(payload, group.text(), context.language());
             }
         }
 
-        return payload.append("\n---\n\n").toString();
+        payload.append("\n**_comment:_**");
+        if (!comment.isEmpty()) {
+            payload.append(' ').append(comment);
+        }
+        return payload.append('\n').toString();
     }
 
     static String formatPaths(List<VirtualFile> files) {
@@ -60,6 +59,19 @@ final class AnnotationFormatter {
             return " " + links.getFirst() + " ";
         }
         return String.join("\n", links);
+    }
+
+    private static List<SelectionGroup> groupSelections(
+        List<AnnotationContext.Selection> selections
+    ) {
+        Map<String, List<AnnotationContext.Selection>> selectionsByText = new LinkedHashMap<>();
+        for (AnnotationContext.Selection selection : selections) {
+            selectionsByText.computeIfAbsent(selection.text(), ignored -> new ArrayList<>())
+                .add(selection);
+        }
+        return selectionsByText.entrySet().stream()
+            .map(entry -> new SelectionGroup(entry.getKey(), entry.getValue()))
+            .toList();
     }
 
     private static String selectionLink(
@@ -108,5 +120,11 @@ final class AnnotationFormatter {
             }
         }
         return longest;
+    }
+
+    private record SelectionGroup(
+        String text,
+        List<AnnotationContext.Selection> selections
+    ) {
     }
 }

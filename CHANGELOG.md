@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.7 - 2026-09-03
+
+- Simplified annotation Markdown by placing compact source links before the comment and removing the footer.
+- Combined matching multi-caret selections into one source group with shared selected text.
+- Updated the README workflow animation and output examples.
+
 ## 1.3.6 - 2026-09-03
 
 - Replaced the annotation input border's internal IntelliJ API with a plugin-owned public Swing border while preserving its theme-aware appearance.
