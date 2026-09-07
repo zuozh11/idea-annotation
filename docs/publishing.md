@@ -149,6 +149,15 @@ gh secret set PUBLISH_TOKEN
 | GitHub Release URL | 对应签名 ZIP 已形成 GitHub 发布物；不证明 Marketplace 状态 |
 | Marketplace 插件/版本页面 URL、状态、记录时间 | JetBrains 当前审核或公开状态，最终发布证据 |
 
+### 2026-09-07 1.3.10 当前状态
+
+- 用户已人工验收单行选区前导空白修复，并明确要求发布。
+- 提交 `0f149bb` 已推送到 `main`，稳定标签 `1.3.10` 指向该提交并已推送。沙箱启动时完成编译，发布工作流按当前配置跳过测试和 Plugin Verifier。
+- [Release #34079847301](https://github.com/zuozh11/idea-annotation/actions/runs/34079847301) 的构建、签名、`Publish plugin` 和 GitHub Release 创建均成功。
+- [GitHub Release 1.3.10](https://github.com/zuozh11/idea-annotation/releases/tag/1.3.10) 已创建，正式资产为 `idea-annotation-1.3.10-signed.zip`，GitHub 记录的 SHA-256 为 `eb9a15b55bb5cfe256de443b5dae1840729c3ecef1965e230ca9c9544e75bc4b`。
+- 2026-09-07 11:32 CST，[Marketplace 插件 API](https://plugins.jetbrains.com/api/plugins/33955) 显示 `hasUnapprovedUpdate=true`；[公开更新 API](https://plugins.jetbrains.com/api/plugins/33955/updates?size=5) 最新已批准并列出的版本为 `1.3.9`。结合本次 `publishPlugin` 成功，证明 `1.3.10` 上传已接受，尚待审核，未证明公开上架。
+- 本次未要求安装，未替换正式 IDEA 用户插件目录。
+
 ### 2026-09-03 1.3.9 当前状态
 
 - 用户在 IDEA 2026.2 sandbox 中人工验收多行选区首行局部内容的相对列位置与后续完整行缩进，并明确要求发布 `1.3.9`。
