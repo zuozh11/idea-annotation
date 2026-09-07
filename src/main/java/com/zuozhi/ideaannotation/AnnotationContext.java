@@ -171,8 +171,8 @@ record AnnotationContext(
         while (lastLine > firstLine && isBlankLine(lines[lastLine - 1])) {
             lastLine--;
         }
-        boolean partialFirstLine = partialFirstLineIndent != null;
-        String commonIndent = partialFirstLineIndent;
+        boolean partialFirstLine = partialFirstLineIndent != null && lastLine - firstLine > 1;
+        String commonIndent = partialFirstLine ? partialFirstLineIndent : null;
         for (int index = firstLine; index < lastLine; index++) {
             if (partialFirstLine && index == firstLine) {
                 continue;

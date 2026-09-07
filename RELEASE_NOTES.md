@@ -1,3 +1,3 @@
 <ul>
-    <li>Preserved the relative column of a partial first line while normalizing complete lines in multiline selections.</li>
+    <li>Removed leading whitespace from single-line selection fragments instead of padding them to their original source column. Multiline selections retain their relative indentation.</li>
 </ul>

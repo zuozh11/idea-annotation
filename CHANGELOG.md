@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.10 - 2026-09-07
+
+- Removed leading whitespace from single-line selection fragments instead of padding them to their original source column.
+
 ## 1.3.9 - 2026-09-03
 
 - Preserved the relative column of a partial first line while normalizing complete lines in multiline selections.
